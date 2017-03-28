@@ -1,0 +1,59 @@
+.mapContainer, #map{
+    height: 100%;
+}
+div#wizardSlides > div {
+    display: none;
+}
+div#wizardSlides > div.activeSlide{
+    display: block;
+}
+
+.rtl .fixed-table-container thead th:first-child{
+    border-left: 1px solid #ddd!important;
+}
+.rtl .fixed-table-container tbody td:first-child{
+    border-left: 1px solid #ddd;
+}
+.prio-starts{
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: thin solid #dddddd;
+}
+span.date-start, span.date-end{
+    border: 1px solid #dddddd;
+    border-radius: 3px;
+    padding: 2px;
+    background-color: #f3f3f3;
+}
+.details-header{
+    border-bottom: thin solid #dddddd;
+    padding-bottom: 15px;
+    margin-bottom: 5px;
+}
+
+.option-table td:first-child {
+    width: 90px;
+}
+.option-table td{
+    width: 25px;
+}
+.option-table th {
+    height: 30px!important;
+    padding: 8px!important;
+}
+table.table.option-table {
+    border: 1px solid #ddd;
+    margin-top: 15px;
+}
+.map-btn .btn {
+    margin-top: 15px;
+}
+.panel-footer ul.list-group {
+    margin-bottom: 0px!important;
+}
+.margin-null{
+    margin: 0!important;
+}
+.modal-dialog {
+    margin: 60px auto!important;
+}
