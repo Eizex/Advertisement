@@ -223,6 +223,18 @@ function mistheme_deleteSingleAd($Ad_id){
     $data = $wpdb->delete( $tableName, array( 'Ad_id' => $Ad_id ) );
     return $data;
 }
+//Finance Here
+
+function mistheme_getFinance(){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'advertisement';
+    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
+    return $get_data;
+}
+
+
+
 
 /*
  * Captain Stats

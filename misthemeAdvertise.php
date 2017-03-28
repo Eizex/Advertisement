@@ -54,6 +54,8 @@ function mistheme_quiz_create_table($prefix) {
           Ad_user_view_log int(11) NOT NULL,
           Ad_cap_not_log int(11) NOT NULL,
           Ad_user_not_log int(11) NOT NULL,
+		  Ad_price int(11) NOT NULL,
+		  Ad_paid int(11) NOT NULL,
           Advertiser_name varchar(200) NOT NULL,
           Advertiser_type int(11) NOT NULL,
           Advertiser_phone varchar(20) NOT NULL,
