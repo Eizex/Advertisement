@@ -1,3 +1,4 @@
+﻿<?php
 function mistheme_getFinance(){
     global $wpdb;
     $wpdb->hide_errors();
@@ -10,6 +11,8 @@ function display_mistheme_adFinance_submenu() {
     if ( !current_user_can( 'manage_options' ) )  {
         wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
     }
+
+    $data = mistheme_getFinance();
 
     ?>
     <table class="table table-striped">
@@ -27,11 +30,11 @@ function display_mistheme_adFinance_submenu() {
         foreach($data as $row){
             ?>
             <tr>
-                <td><?php echo $row.ad_id; ?></td>
-                <td><?php echo $row.ad_ar_name; ?></td>
-                <td><?php echo $row.ad_price; ?></td>
-                <td><?php echo $row.ad_paid; ?></td>
-                <td><?php echo $row.ad_price - $row.ad_paid; ?></td>
+                <td><?php echo $row['ad_id']; ?></td>
+                <td><?php echo $row['ad_ar_name']; ?></td>
+                <td><?php echo $row['ad_price']; ?></td>
+                <td><?php echo $row['ad_paid']; ?></td>
+                <td><?php echo $row['ad_price'] - $row['ad_paid']; ?></td>
             </tr>
             <?php
         }
@@ -43,4 +46,3 @@ function display_mistheme_adFinance_submenu() {
     <?php
 
 }
-
