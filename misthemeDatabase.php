@@ -1,4 +1,5 @@
 <?php
+
 add_action( 'wp_ajax_nopriv_AdFormSubmit', 'mistheme_AdFormSubmit_callback' );
 add_action( 'wp_ajax_AdFormSubmit', 'mistheme_AdFormSubmit_callback' );
 
