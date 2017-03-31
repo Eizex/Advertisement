@@ -4,7 +4,7 @@
  Plugin URI: #
  Description: Wizard for ads entering.
  Version: 1.0
- Author: #
+ Author: Mohammed Issa Saleh
  Author URI: #
  License: GPLv2
  */
@@ -13,6 +13,8 @@ define( 'MISTHEMEADS_PlUGIN_PATH', plugin_dir_path( __FILE__ ) );
 require_once MISTHEMEADS_PlUGIN_PATH . 'misthemeDatabase.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-edit.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-manage.php';
+require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-stat.php';
+require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-finance.php';
 
 /*
  * Add custom style sheet to admin page 
@@ -63,10 +65,20 @@ function mistheme_quiz_create_table($prefix) {
           Advertiser_rep_email varchar(100) NOT NULL,
           Advertiser_rep_type int(11) NOT NULL,
           PRIMARY KEY (Ad_id)
-    )ENGINE=MyISAM DEFAULT CHARSET=utf8;';
-
+    )ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1;';
+    $logTable =
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . 'adlogs (
+          id int(11) NOT NULL AUTO_INCREMENT,
+          capname varchar(200) NOT NULL,
+          event varchar(30) CHARACTER SET utf8 NOT NULL,
+          ad_id int(11) NOT NULL,
+          timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          meta varchar(200) CHARACTER SET utf8 NOT NULL,
+          PRIMARY KEY (id)
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;';
     global $wpdb;
     $wpdb->query( $creation_query );
+    $wpdb->query($logTable);
 }
 add_filter('upload_size_limit', 'mistheme_increase_upload');
 function mistheme_increase_upload($bytes) {
@@ -92,7 +104,6 @@ add_action( 'admin_enqueue_scripts', 'load_mistheme_ads_admin_scripts' );
           wp_enqueue_script( 'mistheme_admin_ajax_js', plugins_url( '/admin/js/mistheme-ads-admin_ajax.js', __FILE__ ), array('jquery','bootstrap_table_js','jquery_steps_js'),'1.3');
           wp_localize_script( 'mistheme_admin_ajax_js', 'admin_ajax', array(
               'url'           => admin_url( 'admin-ajax.php' ),
-              //'url'         => home_url('/ajax'),
               'site_url'      => get_bloginfo('url'),
               'theme_url'     => get_bloginfo('template_directory')
           ));
@@ -108,5 +119,7 @@ add_action('admin_menu','mistheme_advertise_submenu');
     function mistheme_advertise_submenu(){
         add_submenu_page('ads-topmenu', 'الإعلانات', 'قائمة الإعلانات', 'manage_options', 'ads-topmenu');
         add_submenu_page('ads-topmenu', 'اضف إعلان جديد', 'إعلان جديد', 'manage_options', 'ads-new-submenu','display_mistheme_newAd_submenu');
+        add_submenu_page('ads-topmenu', 'احصائيات', 'احصائيات', 'manage_options', 'ads-stat-submenu','display_mistheme_statAd_submenu');
+        add_submenu_page('ads-topmenu', 'مالية', 'مالية', 'manage_options', 'ads-fin-submenu','display_mistheme_adFinance_submenu');
     }
 

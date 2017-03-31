@@ -223,3 +223,277 @@ function mistheme_deleteSingleAd($Ad_id){
     $data = $wpdb->delete( $tableName, array( 'Ad_id' => $Ad_id ) );
     return $data;
 }
+
+/*
+ * Captain Stats
+ */
+
+function mistheme_getAllCaps(){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'caps';
+    $data = $wpdb->get_results("SELECT * FROM $tableName",'ARRAY_A');
+    return $data;
+}
+
+function mistheme_getCapShow($cap, $startDate, $endDate){
+    global $wpdb;
+    $data = array();
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data['rows'] = $wpdb->get_results("SELECT  $tableNameLogs.ad_id, $tableNameLogs.capname, $tableNameLogs.timestamp, COUNT(*) tCount, $tableNameAds.Ad_ar_name, $tableNameLogs.meta
+                                FROM $tableNameLogs
+                                INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                                WHERE capname = '$cap' AND event = 'captain_show' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                                GROUP BY $tableNameLogs.ad_id
+                                ",'ARRAY_A');
+    $wpdb->get_results("
+                            SELECT *
+                            FROM $tableNameLogs
+                            WHERE capname = '$cap' AND event = 'captain_show' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                            ");
+    $data['count'] = $wpdb->num_rows;
+    return $data;
+}
+function mistheme_getCapView($cap, $startDate, $endDate){
+    global $wpdb;
+    $data = array();
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data['rows'] = $wpdb->get_results("SELECT  $tableNameLogs.ad_id, $tableNameLogs.capname, $tableNameLogs.timestamp, COUNT(*) tCount, $tableNameAds.Ad_ar_name
+                                FROM $tableNameLogs
+                                INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                                WHERE capname = '$cap' AND event = 'captain_view' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                                GROUP BY $tableNameLogs.ad_id
+                                ",'ARRAY_A');
+    $wpdb->get_results("SELECT *
+                        FROM $tableNameLogs
+                        WHERE capname = '$cap' AND event = 'captain_view' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                        ");
+    $data['count'] = $wpdb->num_rows;
+    return $data;
+}
+
+function mistheme_getCapDist($cap, $startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $data = $wpdb->get_results("SELECT DATE(timestamp) date, SUM(meta) tSum
+                                FROM $tableNameLogs
+                                WHERE capname = '$cap' AND event = 'captain_ad_dist' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                                GROUP BY DATE(timestamp)
+                                ",'ARRAY_A');
+    return $data;
+}
+
+function mistheme_getCapDistPerAd($cap, $startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data = $wpdb->get_results("SELECT  $tableNameLogs.ad_id, SUM($tableNameLogs.meta) tSum, $tableNameAds.Ad_ar_name
+                                FROM $tableNameLogs
+                                INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                                WHERE capname = '$cap' AND event = 'captain_ad_dist' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                                GROUP BY $tableNameLogs.ad_id
+                                ",'ARRAY_A');
+    return $data;
+}
+
+function mistheme_getCapDailyUpdate($cap, $startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $data = $wpdb->get_results("SELECT DATE_FORMAT(timestamp, '%l%p') hour, COUNT(*) tCount
+                                FROM $tableNameLogs
+                                WHERE capname = '$cap' AND event = 'captain_update' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                                GROUP BY HOUR(timestamp)
+                                ",'ARRAY_A');
+    return $data;
+}
+
+add_action( 'wp_ajax_nopriv_selectCapStat', 'mistheme_selectCapStat_callback' );
+add_action( 'wp_ajax_selectCapStat', 'mistheme_selectCapStat_callback' );
+
+function mistheme_selectCapStat_callback() {
+    $json = array();
+    $cap = $_POST['capname'];
+    $startDate = date_format(date_time_set(date_create($_POST['startdate']),0,0,0),"Y-m-d H:i:s");
+    $endDate = date_format(date_time_set(date_create($_POST['enddate']),23,59,59),"Y-m-d H:i:s");
+    $endDate2 = date_format(date_time_set(date_create($_POST['startdate']),23,59,59),"Y-m-d H:i:s");
+    $event = $_POST['event'];
+    $html = '';
+    if($event=="captain_show"){
+        $queryData = mistheme_getCapShow($cap,$startDate,$endDate);
+        $html = '
+        <div class="well text-center" style="margin: 15px;">
+            <strong>اجمالي الإعلانات التي ظهرت للكابتن: </strong>
+            <span>'.$queryData['count'].'</span>
+        </div>
+        <table class="table table-hover"><thead><tr>
+            <th class="text-right" style="width: 8%;">#</th>
+            <th>اسم الإعلان</th>
+            <th class="text-left" style="width: 25%;">عدد مرات الظهور</th>
+        </tr></thead><tbody>';
+        foreach($queryData['rows'] as $row){
+            //var_dump($row['ad_id']);
+            $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+        }
+        $html .= '</tbody></table>';
+    }elseif($event == "captain_view"){
+        $queryData = mistheme_getCapView($cap,$startDate,$endDate);
+        $html = '
+        <div class="well text-center" style="margin: 15px;">
+            <strong>اجمالي الإعلانات التي عرضت للكابتن: </strong>
+            <span>'.$queryData['count'].'</span>
+        </div>
+        <table class="table table-hover"><thead><tr>
+            <th class="text-right" style="width: 8%;">#</th>
+            <th>اسم الإعلان</th>
+            <th class="text-left" style="width: 25%;">عدد مرات العرض</th>
+        </tr></thead><tbody>';
+        foreach($queryData['rows'] as $row){
+            //var_dump($row['ad_id']);
+            $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+        }
+        $html .= '</tbody></table>';
+    }elseif($event == "captain_ad_dist24"){
+        $queryData = mistheme_getCapDist($cap,$startDate,$endDate);
+        //var_dump($queryData);
+        $html = '
+        <table class="table table-hover"><thead><tr>
+            <th>التاريخ</th>
+            <th >المسافة المقطوعة</th>
+        </tr></thead><tbody>';
+        foreach($queryData as $row){
+            $html .= '<tr><td>'.$row['date'].'</td><td>'.$row['tSum'].'</td></tr>';
+        }
+        $html .= '</tbody></table>';
+    }elseif($event == "captain_ad_distAd"){
+        $queryData = mistheme_getCapDistPerAd($cap,$startDate,$endDate);
+        //var_dump($queryData);
+        $html = '
+        <table class="table table-hover"><thead><tr>
+            <th style="width: 8%;">#</th>
+            <th>اسم الإعلان</th>
+            <th style="width: 30%;">المسافة المقطوعة</th>
+        </tr></thead><tbody>';
+        foreach($queryData as $row){
+            $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td>'.$row['tSum'].'</td></tr>';
+        }
+        $html .= '</tbody></table>';
+    }elseif($event == "captain_update"){
+        $queryData = mistheme_getCapDailyUpdate($cap,$startDate,$endDate2);
+        //var_dump($queryData);
+        $labels = '';
+        $data = '';
+        foreach($queryData as $row){
+            $labels .= '"'.$row['hour'].'",';
+            $data .= $row['tCount'].',';
+        }
+        $html = '<canvas id="myChart" width="830" height="375"></canvas>';
+        $html .= '
+        <script>
+            var ctx = document.getElementById("myChart");
+            var myChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: ['.$labels.'],
+                    datasets: [{
+                        label: "التحديث اليومي",
+                        data: ['.$data.'],
+                        lineTension: 0,
+                        fill: false,
+                        borderColor:"rgba(255,99,132,1)",
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        spanGaps: true,
+                    }],
+
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                    }
+                                }]
+        }
+                }
+            });
+            </script>
+        ';
+    }
+
+    $json['result'] = $html;
+    echo json_encode( $json );
+    die();
+}
+
+/*
+ * User Stats
+ */
+
+function mistheme_getUserStat($event, $startDate, $endDate){
+    global $wpdb;
+    $data = array();
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data['rows'] = $wpdb->get_results("SELECT  $tableNameLogs.ad_id, COUNT(*) tCount, $tableNameAds.Ad_ar_name
+                                FROM $tableNameLogs
+                                INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                                WHERE capname = 0 AND event = '$event' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                                GROUP BY $tableNameLogs.ad_id
+                                ",'ARRAY_A');
+    $wpdb->get_results("
+                            SELECT *
+                            FROM $tableNameLogs
+                            WHERE capname = 0 AND event = '$event' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                            ");
+    $data['count'] = $wpdb->num_rows;
+    return $data;
+}
+
+add_action( 'wp_ajax_nopriv_selectUserStat', 'mistheme_selectUserStat_callback' );
+add_action( 'wp_ajax_selectUserStat', 'mistheme_selectUserStat_callback' );
+
+function mistheme_selectUserStat_callback() {
+    $json = array();
+    $startDate = date_format(date_time_set(date_create($_POST['startdate']),0,0,0),"Y-m-d H:i:s");
+    $endDate = date_format(date_time_set(date_create($_POST['enddate']),23,59,59),"Y-m-d H:i:s");
+    $event = $_POST['event'];
+    $queryData = mistheme_getUserStat($event, $startDate,$endDate);
+    $totalTXT = '';
+    $countTXT = 'عدد المرات';
+    if($event=="user_show"){
+        $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة للمستخدمين: ';
+    }elseif($event=="user_notify"){
+        $totalTXT = 'قائمة الإعلانات التي ظهرت مع تنبيه للمتسخدمين: ';
+    }elseif($event=="user_browse"){
+        $totalTXT = 'قائمة الإعلانات التي تم تصفحها من المستخدمين: ';
+    }else{
+        $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة بعد النقر عليها: ';
+    }
+    $html = '
+        <div class="well text-center" style="margin: 15px;">
+            <strong>'.$totalTXT.'</strong>
+            <span>'.$queryData['count'].'</span>
+        </div>
+        <table class="table table-hover"><thead><tr>
+            <th class="text-right" style="width: 8%;">#</th>
+            <th>اسم الإعلان</th>
+            <th class="text-left" style="width: 25%;">'.$countTXT.'</th>
+        </tr></thead><tbody>';
+    foreach($queryData['rows'] as $row){
+        $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+    }
+    $html .= '</tbody></table>';
+
+    $json['result'] = $html;
+    echo json_encode( $json );
+    die();
+}

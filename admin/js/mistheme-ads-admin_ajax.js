@@ -280,7 +280,7 @@ jQuery(document).ready(function($) {
 		if(conf == true){
 			$.post( admin_ajax.url, contents, function(data){
 				if(data.success == 1){
-					console.log(dataId);
+					//console.log(dataId);
 					tableElement.bootstrapTable('remove', {
 						field: 'Ad_id',
 						values: dataId
@@ -298,4 +298,84 @@ jQuery(document).ready(function($) {
 		var element = $(e.currentTarget).attr('data-map')
 		myMap(element, location);
 	});
+
+	$('.cap-item').on('click',function(e){
+		e.preventDefault();
+		$('.cap-item').each(function(){
+			$(this).removeClass('active');
+		});
+		$(this).addClass('active')
+	});
+    $('#adsFilterBtn').on('click',function(){
+        var capName = $('.cap-item.active').attr('data-cap');
+        var startDate = $('#filterStartDate').val();
+        var endDate = $('#filterEndDate').val();
+        var _event = $('#event').val();
+        var contents = {
+            action:	'selectCapStat',
+            capname: capName,
+            startdate: startDate,
+            enddate: endDate,
+            event: _event,
+        };
+
+        $.post(admin_ajax.url, contents,function(data){
+            //console.log(data.result);
+            $('#remoteData').html(data.result);
+        }, 'json');
+    });
+
+	$(".date-group-stat").datepicker({
+		autoclose: true,
+		format: 'yyyy-mm-dd',
+		todayBtn: false,
+		todayHighlight: true,
+		orientation: 'left bottom',
+		clearBtn: false,
+		inputs: $('[data-statdate]'),
+	});
+	$('[data-statdate]').datepicker().on('show', function(e) {
+		var correctedLeft = $(e.currentTarget).offset().left;
+		var correctedTop = $(e.currentTarget).offset().top + 38;
+		var correctedRight = $(window).width() - (correctedLeft + 225);
+		$('.datepicker').css({'top': correctedTop + 'px','right': correctedRight + 'px','display': 'block', 'left':correctedLeft + 'px'});
+	});
+
+    $('#event').on('change',function(e){
+        //console.log(e, this);
+        if($('#event').val() == "captain_update"){
+            $('#filterEndDate').datepicker('update', $('#filterStartDate').val());
+        }
+        $(".date-group-stat").datepicker('updateDates');
+    });
+
+    $('#filterStartDate').datepicker().on('hide changeDate',function(e){
+        if($('#event').val() == "captain_update"){
+            $('#filterEndDate').datepicker('update', $('#filterStartDate').val());
+            $(".date-group-stat").datepicker('updateDates');
+        }
+    });
+    $('#filterEndDate').datepicker().on('hide changeDate',function(e){
+        if($('#event').val() == "captain_update") {
+            $('#filterStartDate').datepicker('update', $('#filterEndDate').val());
+            $(".date-group-stat").datepicker('updateDates');
+        }
+    });
+
+    $('#userAdsFilterBtn').on('click',function(){
+        var startDate = $('#userfilterStartDate').val();
+        var endDate = $('#userfilterEndDate').val();
+        var _event = $('#user_event').val();
+        var contents = {
+            action:	'selectUserStat',
+            startdate: startDate,
+            enddate: endDate,
+            event: _event,
+        };
+
+        $.post(admin_ajax.url, contents,function(data){
+            //console.log(data.result);
+            $('#remoteUserData').html(data.result);
+        }, 'json');
+    });
 });

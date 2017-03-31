@@ -26,8 +26,9 @@ function display_mistheme_advertise() {
             tableElement.bootstrapTable({
                 columns: [{
                     field: 'Ad_id',
-                    title: 'ID',
-                    visible: false,
+                    title: '#',
+                    width: '50px',
+                    class: 'text-center',
                 }, {
                     field: 'Ad_link_type',
                     title: '',
@@ -53,7 +54,13 @@ function display_mistheme_advertise() {
                     title: 'تاريخ',
                     formatter: dateFormatter,
                     class: 'text-center',
-                    width: '280px',
+                    width: '240px',
+                }, {
+                    field: 'Ad_start_date',
+                    title: 'الحالة',
+                    formatter:adStatusFormatter,
+                    class: 'text-center',
+                    width: '60px',
                 }, {
                     field: 'Ad_id',
                     title: 'إعدادات',
@@ -69,18 +76,27 @@ function display_mistheme_advertise() {
                 formatNoMatches: noMatchesFormatter,
             });
 
-            function dateFormatter(value, row, index){
+            function adStatusFormatter(value,row,index){
                 var todayDate = new Date();
-                    todayDate.setHours(2);
-                    todayDate.setMinutes(0);
-                    todayDate.setSeconds(0);
-                    todayDate.setMilliseconds(0);
+                todayDate.setHours(2);
+                todayDate.setMinutes(0);
+                todayDate.setSeconds(0);
+                todayDate.setMilliseconds(0);
                 var endDate = new Date(row.Ad_end_date);
-                var expireBadge = '';
-                if(!(endDate.getTime() == todayDate.getTime()) && endDate.getTime() < todayDate.getTime()){
-                    expireBadge = '<span class="label label-default pull-left">منتهي</span>'
+                var startDate = new Date(row.Ad_start_date);
+                var statusBadge = '';
+                if(endDate.getTime() != todayDate.getTime() && endDate.getTime() < todayDate.getTime()){
+                    statusBadge = '<span class="label label-default">منتهي</span>'
+                }else if (startDate.getTime() != todayDate.getTime() && startDate.getTime() > todayDate.getTime()){
+                    statusBadge = '<span class="label label-info">منتظر</span>'
+                }else{
+                    statusBadge = '<span class="label label-success">فعال</span>'
                 }
-                return ['<span class="pull-right">من ',
+                return statusBadge;
+            }
+
+            function dateFormatter(value, row, index){
+                return ['<span class="center-text">من ',
                     '<span class="date-start">',
                         row.Ad_start_date,
                     '</span>',
@@ -88,7 +104,6 @@ function display_mistheme_advertise() {
                     '<span class="date-end">',
                         row.Ad_end_date,
                     '</span></span>',
-                    expireBadge,
                 ].join('');
 
             }
@@ -318,7 +333,7 @@ function display_mistheme_advertise() {
                 }, 'json');
             }
         </script>
-        <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaFIlw34FsDp1hvx4N7rhprs4Ya7_dnVU"></script>
+        <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8"></script>
         <script>
             var allMarkers = [];
             function myMap(element, location) {

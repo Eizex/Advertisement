@@ -43,12 +43,12 @@ function display_mistheme_newAd_submenu(){
         $Ad_object = mistheme_getSingleAd($ad_id);
     }
 
-    $objectShowtoCap = 2;
-    $objectShowtoUser = 2;
-    $objectNotifyCap = 2;
-    $objectNotifyUser = 2;
-    $objectMapCap = 2;
-    $objectMapUser = 2;
+    $objectShowtoCap = 0;
+    $objectShowtoUser = 0;
+    $objectNotifyCap = 0;
+    $objectNotifyUser = 0;
+    $objectMapCap = 0;
+    $objectMapUser = 0;
     $objectAdRepType = 1;
     $objectAdType = 1;
     $objectAderType = 1;
@@ -210,7 +210,7 @@ function display_mistheme_newAd_submenu(){
                                     <div style="width: 100%;height: 400px" class="">
                                         <div id="map"></div>
                                     </div>
-                                    <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaFIlw34FsDp1hvx4N7rhprs4Ya7_dnVU"></script>
+                                    <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8"></script>
                                     <script>
                                         var labelIndex = 1;
                                         var allMarkers = [];
@@ -307,12 +307,12 @@ function display_mistheme_newAd_submenu(){
                                             </div>
                                             <div class="radio-inline">
                                                 <label>
-                                                    <input required type="radio" name="Ad_show_to_captain" id="Ad_show_to_captain2" value="0" <?php checked( $objectShowtoCap, 2); ?>/>
+                                                    <input required type="radio" name="Ad_show_to_captain" id="Ad_show_to_captain2" value="0" <?php checked( $objectShowtoCap, 0); ?>/>
                                                     لا
                                                 </label>
                                             </div>
                                         </div>
-                                        <div id="capOpt" <?php echo $objectShowtoCap == 2 ? 'style="display: none;"':''; ?>>
+                                        <div id="capOpt" <?php echo $objectShowtoCap == 0 ? 'style="display: none;"':''; ?>>
                                             <div class="form-group">
                                                 <label for="Ad_cap_notify" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_cap_notify; ?></label>
                                                 <div class="radio-inline">
@@ -323,7 +323,7 @@ function display_mistheme_newAd_submenu(){
                                                 </div>
                                                 <div class="radio-inline">
                                                     <label>
-                                                        <input required type="radio" name="Ad_cap_notify" id="Ad_cap_notify2" value="0" <?php checked( $objectNotifyCap, 2); ?>/>
+                                                        <input required type="radio" name="Ad_cap_notify" id="Ad_cap_notify2" value="0" <?php checked( $objectNotifyCap, 0); ?>/>
                                                         لا
                                                     </label>
                                                 </div>
@@ -338,7 +338,7 @@ function display_mistheme_newAd_submenu(){
                                                 </div>
                                                 <div class="radio-inline">
                                                     <label>
-                                                        <input required type="radio" name="Ad_showonmap_captain" id="Ad_showonmap_captain2" value="0" <?php checked( $objectMapCap, 2); ?>/>
+                                                        <input required type="radio" name="Ad_showonmap_captain" id="Ad_showonmap_captain2" value="0" <?php checked( $objectMapCap, 0); ?>/>
                                                         لا
                                                     </label>
                                                 </div>
@@ -362,12 +362,12 @@ function display_mistheme_newAd_submenu(){
                                             </div>
                                             <div class="radio-inline">
                                                 <label>
-                                                    <input required type="radio" name="Ad_show_to_user" id="Ad_show_to_user2" value="0" <?php checked( $objectShowtoUser, 2); ?>/>
+                                                    <input required type="radio" name="Ad_show_to_user" id="Ad_show_to_user2" value="0" <?php checked( $objectShowtoUser, 0); ?>/>
                                                     لا
                                                 </label>
                                             </div>
                                         </div>
-                                        <div id="userOpt" <?php echo $objectShowtoUser == 2 ? 'style="display: none;"':''; ?>>
+                                        <div id="userOpt" <?php echo $objectShowtoUser == 0 ? 'style="display: none;"':''; ?>>
                                             <div class="form-group">
                                                 <label for="Ad_user_notify" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_user_notify; ?></label>
                                                 <div class="radio-inline">
@@ -378,7 +378,7 @@ function display_mistheme_newAd_submenu(){
                                                 </div>
                                                 <div class="radio-inline">
                                                     <label>
-                                                        <input required type="radio" name="Ad_user_notify" id="Ad_user_notify2" value="0" <?php checked( $objectNotifyUser, 2); ?> />
+                                                        <input required type="radio" name="Ad_user_notify" id="Ad_user_notify2" value="0" <?php checked( $objectNotifyUser, 0); ?> />
                                                         لا
                                                     </label>
                                                 </div>
@@ -393,7 +393,7 @@ function display_mistheme_newAd_submenu(){
                                                 </div>
                                                 <div class="radio-inline">
                                                     <label>
-                                                        <input required type="radio" name="Ad_showonmap_user" id="Ad_showonmap_user2" value="0" <?php checked( $objectMapUser, 2); ?>/>
+                                                        <input required type="radio" name="Ad_showonmap_user" id="Ad_showonmap_user2" value="0" <?php checked( $objectMapUser, 0); ?>/>
                                                         لا
                                                     </label>
                                                 </div>
@@ -507,7 +507,9 @@ function display_mistheme_newAd_submenu(){
                                 </button>
                             </div>
                             <div class="col-sm-4">
-                                <button type="submit" class="btn btn-default form-control" role="button" id="adsFormSubmit">حفظ</button>
+                                <div class="tooltip-wrapper disabled">
+                                    <button type="submit" class="btn btn-default form-control" role="button" id="adsFormSubmit">حفظ</button>
+                                </div>
                             </div>
                             <div class="col-sm-4">
                                 <button type="button" class="btn btn-default pull-left" id="Ad_nextSlide">
