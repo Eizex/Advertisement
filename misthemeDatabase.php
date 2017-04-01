@@ -45,6 +45,68 @@ function mistheme_AdFormSubmit_callback() {
     $ad_Data['Advertiser_rep_phone'] = trim($_POST['Advertiser_rep_phone']);
     $ad_Data['Advertiser_rep_email'] = trim($_POST['Advertiser_rep_email']);
     $ad_Data['Advertiser_rep_type'] = trim($_POST['Advertiser_rep_type']);
+	
+// تحديد الأسعار
+	$allprices  = mistheme_getPrices();
+
+	$picture_price = $allprices->picture_price;
+	$video_price= $allprices->video_price;
+	$priority_price= $allprices->priority_price;
+	$showtocap_price= $allprices->showtocap_price;
+	$notifycap_price= $allprices->notifycap_price;
+	$mapcap_price= $allprices->mapcap_price;
+	$showtouser_price= $allprices->showtouser_price;
+	$notifyuser_price= $allprices->notifyuser_price;
+	$mapuser_price= $allprices->mapuser_price;
+	$cap100view_price= $allprices->cap100view_price;
+	$user100view_price= $allprices->user100view_price;
+	$pluslocation_price= $allprices->pluslocation_price;
+	
+	
+	
+// حساب سعر الاعلان بناءً على البيانات
+	$price = 0;
+	if($ad_Data['Ad_link_type']==1) $price = $picture_price;
+	if($ad_Data['Ad_link_type']==2) $price = $video_price;
+	if($ad_Data['Ad_priority']>1){
+		$price += $priority_price * ( $ad_Data['Ad_priority'] - 1) ;
+	}
+
+	if($ad_Data['Ad_show_to_captain']==1) $price += $showtocap_price;
+	if($ad_Data['Ad_cap_notify']==1) $price += $notifycap_price;
+	if($ad_Data['Ad_showonmap_captain']==1) $price += $mapcap_price;
+	if($ad_Data['Ad_show_to_user']==1) $price += $showtouser_price;
+	if($ad_Data['Ad_user_notify']==1) $price += $notifyuser_price;
+	if($ad_Data['Ad_showonmap_user']==1) $price += $mapuser_price;
+	if($ad_Data['Ad_cap_view_no']>0) {
+		$price += $cap100view_price * $ad_Data['Ad_cap_view_no']/100;
+	}
+	if($ad_Data['Ad_user_view_no']>0){
+		$price += $user100view_price * $ad_Data['Ad_user_view_no']/100;
+	}
+	// how many location?
+	$LocationArr = explode(":", $ad_Data['Ad_locations']);
+	if(sizeof($LocationArr)>1){
+		$price += $pluslocation_price * ( sizeof($LocationArr) - 1 ) ;
+	}
+
+	// how many days ????
+	$date1 = new DateTime($ad_Data['Ad_start_date']);
+	$date2 = new DateTime($ad_Data['Ad_end_date']);
+
+	$howmanydays = $date2->diff($date1)->format("%a");
+	$howmanydays++;
+	//$howmanydays = $ad_Data['Ad_end_date']->diff($ad_Data['Ad_start_date'])->format("%a");
+	
+	if($howmanydays > 1){
+		$price = $price * $howmanydays ;
+		
+	}
+	
+	$ad_Data['Ad_price']= $price;
+	
+	
+
 
     $emptyFields = array();
     foreach($ad_Data as $item => $value){
@@ -195,6 +257,8 @@ function mistheme_get_allAds(){
         Ad_user_view_no,
         Ad_showonmap_captain,
         Ad_showonmap_user,
+		Ad_price,
+		Ad_paid,
         Advertiser_name,
         Advertiser_type,
         Advertiser_phone,
@@ -234,7 +298,13 @@ function mistheme_getFinance(){
     return $get_data;
 }
 
-
+function mistheme_getPrices(){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'prices';
+    $get_data = $wpdb->get_row("SELECT * FROM $tableName WHERE id = 1");
+    return $get_data;
+}
 
 
 /*
