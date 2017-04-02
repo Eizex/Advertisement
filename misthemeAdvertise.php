@@ -75,7 +75,7 @@ function mistheme_quiz_create_table($prefix) {
           event varchar(30) CHARACTER SET utf8 NOT NULL,
           ad_id int(11) NOT NULL,
           timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          meta varchar(200) CHARACTER SET utf8 NOT NULL,
+          meta varchar(200) CHARACTER SET utf8 NULL,
           PRIMARY KEY (id)
         ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;';
 		//prices
@@ -100,12 +100,24 @@ function mistheme_quiz_create_table($prefix) {
 	$addprices = 
 	'INSERT INTO ' . $prefix . 'prices (`id`, `picture_price`, `video_price`, `priority_price`, `showtocap_price`, `notifycap_price`, `mapcap_price`, `showtouser_price`, `notifyuser_price`, `mapuser_price`, `cap100view_price`, `user100view_price`, `pluslocation_price`) VALUES
 (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);';
+    $capTable = '
+    CREATE TABLE IF NOT EXISTS ' . $prefix . 'captains (
+      Cap_ID int(11) NOT NULL AUTO_INCREMENT,
+      Cap_Username varchar(50) NOT NULL,
+      Cap_Password varchar(50) NOT NULL,
+      Cap_WorkingTime int(11) NOT NULL DEFAULT 0,
+      Cap_WorkingDistance int(11) NOT NULL DEFAULT 0,
+      PRIMARY KEY (Cap_ID),
+      UNIQUE KEY Cap_Username (Cap_Username)
+    )  ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
+    ';
     global $wpdb;
     $wpdb->query( $creation_query );
     $wpdb->query($logTable);
 	$wpdb->query($pricestable);
 	$wpdb->query($addprices);
 
+    $wpdb->query($capTable);
 }
 add_filter('upload_size_limit', 'mistheme_increase_upload');
 function mistheme_increase_upload($bytes) {

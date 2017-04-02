@@ -269,7 +269,9 @@ function mistheme_get_allAds(){
         Advertiser_rep_phone,
         Advertiser_rep_email,
         Advertiser_rep_type
-        FROM $tableName", 'ARRAY_A');
+        FROM $tableName
+
+        ", 'ARRAY_A');
     return $get_data;
 }
 
@@ -314,7 +316,7 @@ function mistheme_getPrices(){
 function mistheme_getAllCaps(){
     global $wpdb;
     $wpdb->hide_errors();
-    $tableName = $wpdb->prefix.'caps';
+    $tableName = $wpdb->prefix.'captains';
     $data = $wpdb->get_results("SELECT * FROM $tableName",'ARRAY_A');
     return $data;
 }
@@ -394,6 +396,23 @@ function mistheme_getCapDailyUpdate($cap, $startDate, $endDate){
                                 WHERE capname = '$cap' AND event = 'captain_update' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
                                 GROUP BY HOUR(timestamp)
                                 ",'ARRAY_A');
+    return $data;
+}
+
+function mistheme_getCapMap($cap, $startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data = $wpdb->get_results("
+                            SELECT $tableNameLogs.ad_id, $tableNameAds.Ad_ar_name, $tableNameLogs.meta, COUNT(*) tCount
+                            FROM $tableNameLogs
+                            INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                            WHERE capname = '$cap' AND event = 'captain_show' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                            GROUP BY $tableNameLogs.meta, $tableNameLogs.ad_id
+                            ORDER BY tCount DESC
+                            LIMIT 10
+    ",'ARRAY_A');
     return $data;
 }
 
@@ -509,6 +528,41 @@ function mistheme_selectCapStat_callback() {
             });
             </script>
         ';
+    }elseif($event == "cap_map"){
+        $queryData = mistheme_getCapMap($cap, $startDate,$endDate);
+        $html = '<div id="mapCap" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8&callback=initMap"></script>';
+        $html .= '<script>
+                function initMap() {
+                    var mapCanvas = document.getElementById("mapCap");
+                    var myCenter = new google.maps.LatLng(24.647017162630366,44.589385986328124);
+                    var mapOptions = {center: myCenter, zoom: 5,streetViewControl: false};
+                    var infoWindow = new google.maps.InfoWindow();
+                    var image = {
+                    url: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless.png",
+                    scaledSize: new google.maps.Size(30, 50),
+                    labelOrigin: new google.maps.Point(8, 15),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(10, 10)
+                    };
+                    map = new google.maps.Map(mapCanvas, mapOptions);
+                    ';
+
+        foreach($queryData as $marker){
+            $html .= '
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng('.$marker['meta'].'),
+                    label: "'.$marker["tCount"].'",
+                    map: map,
+                    icon: image,
+                    title: "'.$marker["Ad_ar_name"].'",
+                });
+                google.maps.event.addListener(marker, "click", function () {
+                    infoWindow.setContent("<h1>'.$marker['Ad_ar_name'].'</h1><p>عدد مرات الظهور: '.$marker["tCount"].'</p>");
+                    infoWindow.open(map, this);
+                });
+                ';
+        }
+        $html .= '};</script>';
     }
 
     $json['result'] = $html;
@@ -541,6 +595,23 @@ function mistheme_getUserStat($event, $startDate, $endDate){
     return $data;
 }
 
+function mistheme_getUserMap($startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data = $wpdb->get_results("
+                            SELECT $tableNameLogs.ad_id, $tableNameAds.Ad_ar_name, $tableNameLogs.meta, COUNT(*) tCount
+                            FROM $tableNameLogs
+                            INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                            WHERE capname = 0 AND event = 'user_notify' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                            GROUP BY $tableNameLogs.meta, $tableNameLogs.ad_id
+                            ORDER BY tCount DESC
+                            LIMIT 10
+    ",'ARRAY_A');
+    return $data;
+}
+
 add_action( 'wp_ajax_nopriv_selectUserStat', 'mistheme_selectUserStat_callback' );
 add_action( 'wp_ajax_selectUserStat', 'mistheme_selectUserStat_callback' );
 
@@ -549,8 +620,12 @@ function mistheme_selectUserStat_callback() {
     $startDate = date_format(date_time_set(date_create($_POST['startdate']),0,0,0),"Y-m-d H:i:s");
     $endDate = date_format(date_time_set(date_create($_POST['enddate']),23,59,59),"Y-m-d H:i:s");
     $event = $_POST['event'];
-    $queryData = mistheme_getUserStat($event, $startDate,$endDate);
-    $totalTXT = '';
+    if($event == "user_map"){
+        $queryData = mistheme_getUserMap($startDate,$endDate);
+    }else{
+        $queryData = mistheme_getUserStat($event, $startDate,$endDate);
+    }
+    //var_dump($queryData);
     $countTXT = 'عدد المرات';
     if($event=="user_show"){
         $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة للمستخدمين: ';
@@ -561,7 +636,43 @@ function mistheme_selectUserStat_callback() {
     }else{
         $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة بعد النقر عليها: ';
     }
-    $html = '
+    if($event == "user_map"){
+        $html = '<div id="map" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8&callback=initMap"></script>';
+        $html .= '<script>
+
+                function initMap() {
+                    var mapCanvas = document.getElementById("map");
+                    var myCenter = new google.maps.LatLng(24.647017162630366,44.589385986328124);
+                    var mapOptions = {center: myCenter, zoom: 5,streetViewControl: false};
+                    var infoWindow = new google.maps.InfoWindow();
+                    var image = {
+                    url: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless.png",
+                    scaledSize: new google.maps.Size(30, 50),
+                    labelOrigin: new google.maps.Point(8, 15),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(10, 10)
+                    };
+                    map = new google.maps.Map(mapCanvas, mapOptions);
+                    ';
+
+            foreach($queryData as $marker){
+                $html .= '
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng('.$marker['meta'].'),
+                    label: "'.$marker["tCount"].'",
+                    map: map,
+                    icon: image,
+                    title: "'.$marker["Ad_ar_name"].'",
+                });
+                google.maps.event.addListener(marker, "click", function () {
+                    infoWindow.setContent("<h1>'.$marker['Ad_ar_name'].'</h1><p>عدد مرات الظهور: '.$marker["tCount"].'</p>");
+                    infoWindow.open(map, this);
+                });
+                ';
+            }
+        $html .= '};</script>';
+    }else{
+        $html = '
         <div class="well text-center" style="margin: 15px;">
             <strong>'.$totalTXT.'</strong>
             <span>'.$queryData['count'].'</span>
@@ -571,10 +682,12 @@ function mistheme_selectUserStat_callback() {
             <th>اسم الإعلان</th>
             <th class="text-left" style="width: 25%;">'.$countTXT.'</th>
         </tr></thead><tbody>';
-    foreach($queryData['rows'] as $row){
-        $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+        foreach($queryData['rows'] as $row){
+            $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+        }
+        $html .= '</tbody></table>';
     }
-    $html .= '</tbody></table>';
+
 
     $json['result'] = $html;
     echo json_encode( $json );
