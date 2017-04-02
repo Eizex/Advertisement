@@ -54,6 +54,8 @@ function mistheme_quiz_create_table($prefix) {
           Ad_user_view_log int(11) NOT NULL,
           Ad_cap_not_log int(11) NOT NULL,
           Ad_user_not_log int(11) NOT NULL,
+		  Ad_price int(11) NOT NULL,
+		  Ad_paid int(11) NOT NULL,
           Advertiser_name varchar(200) NOT NULL,
           Advertiser_type int(11) NOT NULL,
           Advertiser_phone varchar(20) NOT NULL,
@@ -73,24 +75,37 @@ function mistheme_quiz_create_table($prefix) {
           event varchar(30) CHARACTER SET utf8 NOT NULL,
           ad_id int(11) NOT NULL,
           timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          meta varchar(200) CHARACTER SET utf8 NULL,
+          meta varchar(200) CHARACTER SET utf8 NOT NULL,
           PRIMARY KEY (id)
         ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;';
-    $capTable = '
-    CREATE TABLE IF NOT EXISTS ' . $prefix . 'captains (
-      Cap_ID int(11) NOT NULL AUTO_INCREMENT,
-      Cap_Username varchar(50) NOT NULL,
-      Cap_Password varchar(50) NOT NULL,
-      Cap_WorkingTime int(11) NOT NULL DEFAULT 0,
-      Cap_WorkingDistance int(11) NOT NULL DEFAULT 0,
-      PRIMARY KEY (Cap_ID),
-      UNIQUE KEY Cap_Username (Cap_Username)
-    )  ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
-    ';
+		//prices
+		
+	$pricestable =
+    'CREATE TABLE IF NOT EXISTS ' . $prefix . 'prices (
+          id int(11) NOT NULL AUTO_INCREMENT,
+          picture_price int(11) NOT NULL,
+          video_price int(11) NOT NULL,
+          priority_price int(11) NOT NULL,
+          showtocap_price int(11) NOT NULL,
+          notifycap_price int(11) NOT NULL,
+          mapcap_price int(11) NOT NULL,
+          showtouser_price int(11) NOT NULL,
+          notifyuser_price int(11) NOT NULL,
+          mapuser_price int(11) NOT NULL,
+          cap100view_price int(11) NOT NULL,
+          user100view_price int(11) NOT NULL,
+          pluslocation_price int(11) NOT NULL,
+          PRIMARY KEY (id)
+    )ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=0;';
+	$addprices = 
+	'INSERT INTO ' . $prefix . 'prices (`id`, `picture_price`, `video_price`, `priority_price`, `showtocap_price`, `notifycap_price`, `mapcap_price`, `showtouser_price`, `notifyuser_price`, `mapuser_price`, `cap100view_price`, `user100view_price`, `pluslocation_price`) VALUES
+(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);';
     global $wpdb;
     $wpdb->query( $creation_query );
     $wpdb->query($logTable);
-    $wpdb->query($capTable);
+	$wpdb->query($pricestable);
+	$wpdb->query($addprices);
+
 }
 add_filter('upload_size_limit', 'mistheme_increase_upload');
 function mistheme_increase_upload($bytes) {
