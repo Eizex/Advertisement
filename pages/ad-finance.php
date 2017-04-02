@@ -1,11 +1,5 @@
 ﻿<?php
-function mistheme_getFinance(){
-    global $wpdb;
-    $wpdb->hide_errors();
-    $tableName = $wpdb->prefix.'finance';
-    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
-    return $get_data;
-}
+
 
 function display_mistheme_adFinance_submenu() {
     if ( !current_user_can( 'manage_options' ) )  {
@@ -66,7 +60,6 @@ function display_mistheme_adFinance_submenu() {
 	<table style='align="center" border: 1px; width:40%'>
 	  		
 				
-				<input type="hidden" name="site_name" value="<? echo $site_name; ?>">
 				
 				<tr><td>إعلان صورة لمدة يوم:</td><td><input type="text" name="picture_price" value="<?php echo $prices->picture_price; ?>"></td></tr>
 				<tr><td>إعلان فيديو لمدة يوم:</td><td><input type="text" name="video_price" value="<?php echo $prices->video_price; ?>"></td></tr>
