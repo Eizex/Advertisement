@@ -1,5 +1,4 @@
 <?php
-
 add_action( 'wp_ajax_nopriv_AdFormSubmit', 'mistheme_AdFormSubmit_callback' );
 add_action( 'wp_ajax_AdFormSubmit', 'mistheme_AdFormSubmit_callback' );
 
@@ -45,68 +44,6 @@ function mistheme_AdFormSubmit_callback() {
     $ad_Data['Advertiser_rep_phone'] = trim($_POST['Advertiser_rep_phone']);
     $ad_Data['Advertiser_rep_email'] = trim($_POST['Advertiser_rep_email']);
     $ad_Data['Advertiser_rep_type'] = trim($_POST['Advertiser_rep_type']);
-	
-// تحديد الأسعار
-	$allprices  = mistheme_getPrices();
-
-	$picture_price = $allprices->picture_price;
-	$video_price= $allprices->video_price;
-	$priority_price= $allprices->priority_price;
-	$showtocap_price= $allprices->showtocap_price;
-	$notifycap_price= $allprices->notifycap_price;
-	$mapcap_price= $allprices->mapcap_price;
-	$showtouser_price= $allprices->showtouser_price;
-	$notifyuser_price= $allprices->notifyuser_price;
-	$mapuser_price= $allprices->mapuser_price;
-	$cap100view_price= $allprices->cap100view_price;
-	$user100view_price= $allprices->user100view_price;
-	$pluslocation_price= $allprices->pluslocation_price;
-	
-	
-	
-// حساب سعر الاعلان بناءً على البيانات
-	$price = 0;
-	if($ad_Data['Ad_link_type']==1) $price = $picture_price;
-	if($ad_Data['Ad_link_type']==2) $price = $video_price;
-	if($ad_Data['Ad_priority']>1){
-		$price += $priority_price * ( $ad_Data['Ad_priority'] - 1) ;
-	}
-
-	if($ad_Data['Ad_show_to_captain']==1) $price += $showtocap_price;
-	if($ad_Data['Ad_cap_notify']==1) $price += $notifycap_price;
-	if($ad_Data['Ad_showonmap_captain']==1) $price += $mapcap_price;
-	if($ad_Data['Ad_show_to_user']==1) $price += $showtouser_price;
-	if($ad_Data['Ad_user_notify']==1) $price += $notifyuser_price;
-	if($ad_Data['Ad_showonmap_user']==1) $price += $mapuser_price;
-	if($ad_Data['Ad_cap_view_no']>0) {
-		$price += $cap100view_price * $ad_Data['Ad_cap_view_no']/100;
-	}
-	if($ad_Data['Ad_user_view_no']>0){
-		$price += $user100view_price * $ad_Data['Ad_user_view_no']/100;
-	}
-	// how many location?
-	$LocationArr = explode(":", $ad_Data['Ad_locations']);
-	if(sizeof($LocationArr)>1){
-		$price += $pluslocation_price * ( sizeof($LocationArr) - 1 ) ;
-	}
-
-	// how many days ????
-	$date1 = new DateTime($ad_Data['Ad_start_date']);
-	$date2 = new DateTime($ad_Data['Ad_end_date']);
-
-	$howmanydays = $date2->diff($date1)->format("%a");
-	$howmanydays++;
-	//$howmanydays = $ad_Data['Ad_end_date']->diff($ad_Data['Ad_start_date'])->format("%a");
-	
-	if($howmanydays > 1){
-		$price = $price * $howmanydays ;
-		
-	}
-	
-	$ad_Data['Ad_price']= $price;
-	
-	
-
 
     $emptyFields = array();
     foreach($ad_Data as $item => $value){
@@ -257,8 +194,6 @@ function mistheme_get_allAds(){
         Ad_user_view_no,
         Ad_showonmap_captain,
         Ad_showonmap_user,
-		Ad_price,
-		Ad_paid,
         Advertiser_name,
         Advertiser_type,
         Advertiser_phone,
@@ -269,7 +204,9 @@ function mistheme_get_allAds(){
         Advertiser_rep_phone,
         Advertiser_rep_email,
         Advertiser_rep_type
-        FROM $tableName", 'ARRAY_A');
+        FROM $tableName
+
+        ", 'ARRAY_A');
     return $get_data;
 }
 
@@ -288,24 +225,6 @@ function mistheme_deleteSingleAd($Ad_id){
     $data = $wpdb->delete( $tableName, array( 'Ad_id' => $Ad_id ) );
     return $data;
 }
-//Finance Here
-
-function mistheme_getFinance(){
-    global $wpdb;
-    $wpdb->hide_errors();
-    $tableName = $wpdb->prefix.'advertisement';
-    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
-    return $get_data;
-}
-
-function mistheme_getPrices(){
-    global $wpdb;
-    $wpdb->hide_errors();
-    $tableName = $wpdb->prefix.'prices';
-    $get_data = $wpdb->get_row("SELECT * FROM $tableName WHERE id = 1");
-    return $get_data;
-}
-
 
 /*
  * Captain Stats
@@ -314,7 +233,7 @@ function mistheme_getPrices(){
 function mistheme_getAllCaps(){
     global $wpdb;
     $wpdb->hide_errors();
-    $tableName = $wpdb->prefix.'caps';
+    $tableName = $wpdb->prefix.'captains';
     $data = $wpdb->get_results("SELECT * FROM $tableName",'ARRAY_A');
     return $data;
 }
@@ -394,6 +313,23 @@ function mistheme_getCapDailyUpdate($cap, $startDate, $endDate){
                                 WHERE capname = '$cap' AND event = 'captain_update' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
                                 GROUP BY HOUR(timestamp)
                                 ",'ARRAY_A');
+    return $data;
+}
+
+function mistheme_getCapMap($cap, $startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data = $wpdb->get_results("
+                            SELECT $tableNameLogs.ad_id, $tableNameAds.Ad_ar_name, $tableNameLogs.meta, COUNT(*) tCount
+                            FROM $tableNameLogs
+                            INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                            WHERE capname = '$cap' AND event = 'captain_show' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                            GROUP BY $tableNameLogs.meta, $tableNameLogs.ad_id
+                            ORDER BY tCount DESC
+                            LIMIT 10
+    ",'ARRAY_A');
     return $data;
 }
 
@@ -509,6 +445,41 @@ function mistheme_selectCapStat_callback() {
             });
             </script>
         ';
+    }elseif($event == "cap_map"){
+        $queryData = mistheme_getCapMap($cap, $startDate,$endDate);
+        $html = '<div id="mapCap" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8&callback=initMap"></script>';
+        $html .= '<script>
+                function initMap() {
+                    var mapCanvas = document.getElementById("mapCap");
+                    var myCenter = new google.maps.LatLng(24.647017162630366,44.589385986328124);
+                    var mapOptions = {center: myCenter, zoom: 5,streetViewControl: false};
+                    var infoWindow = new google.maps.InfoWindow();
+                    var image = {
+                    url: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless.png",
+                    scaledSize: new google.maps.Size(30, 50),
+                    labelOrigin: new google.maps.Point(8, 15),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(10, 10)
+                    };
+                    map = new google.maps.Map(mapCanvas, mapOptions);
+                    ';
+
+        foreach($queryData as $marker){
+            $html .= '
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng('.$marker['meta'].'),
+                    label: "'.$marker["tCount"].'",
+                    map: map,
+                    icon: image,
+                    title: "'.$marker["Ad_ar_name"].'",
+                });
+                google.maps.event.addListener(marker, "click", function () {
+                    infoWindow.setContent("<h1>'.$marker['Ad_ar_name'].'</h1><p>عدد مرات الظهور: '.$marker["tCount"].'</p>");
+                    infoWindow.open(map, this);
+                });
+                ';
+        }
+        $html .= '};</script>';
     }
 
     $json['result'] = $html;
@@ -541,6 +512,23 @@ function mistheme_getUserStat($event, $startDate, $endDate){
     return $data;
 }
 
+function mistheme_getUserMap($startDate, $endDate){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $tableNameAds = $wpdb->prefix.'advertisement';
+    $data = $wpdb->get_results("
+                            SELECT $tableNameLogs.ad_id, $tableNameAds.Ad_ar_name, $tableNameLogs.meta, COUNT(*) tCount
+                            FROM $tableNameLogs
+                            INNER JOIN $tableNameAds ON $tableNameLogs.ad_id = $tableNameAds.Ad_id
+                            WHERE capname = 0 AND event = 'user_notify' AND (timestamp >= '$startDate' AND timestamp <= '$endDate')
+                            GROUP BY $tableNameLogs.meta, $tableNameLogs.ad_id
+                            ORDER BY tCount DESC
+                            LIMIT 10
+    ",'ARRAY_A');
+    return $data;
+}
+
 add_action( 'wp_ajax_nopriv_selectUserStat', 'mistheme_selectUserStat_callback' );
 add_action( 'wp_ajax_selectUserStat', 'mistheme_selectUserStat_callback' );
 
@@ -549,8 +537,12 @@ function mistheme_selectUserStat_callback() {
     $startDate = date_format(date_time_set(date_create($_POST['startdate']),0,0,0),"Y-m-d H:i:s");
     $endDate = date_format(date_time_set(date_create($_POST['enddate']),23,59,59),"Y-m-d H:i:s");
     $event = $_POST['event'];
-    $queryData = mistheme_getUserStat($event, $startDate,$endDate);
-    $totalTXT = '';
+    if($event == "user_map"){
+        $queryData = mistheme_getUserMap($startDate,$endDate);
+    }else{
+        $queryData = mistheme_getUserStat($event, $startDate,$endDate);
+    }
+    //var_dump($queryData);
     $countTXT = 'عدد المرات';
     if($event=="user_show"){
         $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة للمستخدمين: ';
@@ -561,7 +553,43 @@ function mistheme_selectUserStat_callback() {
     }else{
         $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة بعد النقر عليها: ';
     }
-    $html = '
+    if($event == "user_map"){
+        $html = '<div id="map" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8&callback=initMap"></script>';
+        $html .= '<script>
+
+                function initMap() {
+                    var mapCanvas = document.getElementById("map");
+                    var myCenter = new google.maps.LatLng(24.647017162630366,44.589385986328124);
+                    var mapOptions = {center: myCenter, zoom: 5,streetViewControl: false};
+                    var infoWindow = new google.maps.InfoWindow();
+                    var image = {
+                    url: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi-dotless.png",
+                    scaledSize: new google.maps.Size(30, 50),
+                    labelOrigin: new google.maps.Point(8, 15),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(10, 10)
+                    };
+                    map = new google.maps.Map(mapCanvas, mapOptions);
+                    ';
+
+            foreach($queryData as $marker){
+                $html .= '
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng('.$marker['meta'].'),
+                    label: "'.$marker["tCount"].'",
+                    map: map,
+                    icon: image,
+                    title: "'.$marker["Ad_ar_name"].'",
+                });
+                google.maps.event.addListener(marker, "click", function () {
+                    infoWindow.setContent("<h1>'.$marker['Ad_ar_name'].'</h1><p>عدد مرات الظهور: '.$marker["tCount"].'</p>");
+                    infoWindow.open(map, this);
+                });
+                ';
+            }
+        $html .= '};</script>';
+    }else{
+        $html = '
         <div class="well text-center" style="margin: 15px;">
             <strong>'.$totalTXT.'</strong>
             <span>'.$queryData['count'].'</span>
@@ -571,10 +599,12 @@ function mistheme_selectUserStat_callback() {
             <th>اسم الإعلان</th>
             <th class="text-left" style="width: 25%;">'.$countTXT.'</th>
         </tr></thead><tbody>';
-    foreach($queryData['rows'] as $row){
-        $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+        foreach($queryData['rows'] as $row){
+            $html .= '<tr><td>'.$row['ad_id'].'</td><td>'.$row['Ad_ar_name'].'</td><td class="text-left">'.$row['tCount'].'</td></tr>';
+        }
+        $html .= '</tbody></table>';
     }
-    $html .= '</tbody></table>';
+
 
     $json['result'] = $html;
     echo json_encode( $json );

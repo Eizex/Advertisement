@@ -57,15 +57,20 @@ table.table.option-table {
 .modal-dialog {
     margin: 60px auto!important;
 }
-.tooltip-wrapper .btn[disabled] {
+.tooltip-wrapper .btn-warning.btn[disabled] {
     pointer-events: none;
+    background-color: #f0ad4e;
 }
 .tooltip-wrapper.disabled {
     cursor: not-allowed;
 }
 .cap-row{
-    height: 500px;
+    height: 602px;
     overflow: hidden;
+    margin-top: 15px;
+}
+.user-row{
+    margin-top: 15px;
 }
 #searchlist{
     overflow-y: scroll;
