@@ -105,11 +105,12 @@ function display_mistheme_adCaptains_submenu() {
     <table class="table table-striped" width="50%" align="center">
         <thead>
         <tr>
-            <th width="10%">#</th>
-            <th width="20%">اسم المستخدم</th>
-            <th width="20%">كلمة المرور</th>
-            <th width="20%">ساعات العمل</th>
-            <th width="20%">المسافة المقطوعة</th>
+            <th width="30px">#</th>
+            <th width="40px">اسم المستخدم</th>
+            <th width="40px">كلمة المرور</th>
+            <th width="40px">ساعات العمل</th>
+            <th width="40px">المسافة المقطوعة</th>
+			<th width ="50px">إعدادات</th>
         </tr>
         </thead>
         <tbody>
@@ -122,6 +123,12 @@ function display_mistheme_adCaptains_submenu() {
                 <td><?php echo $row['Cap_Password']; ?></td>
 				<td><?php echo $row['Cap_WorkingTime']; ?></td>
 				<td><?php echo $row['Cap_WorkingDistance']; ?></td>
+				<td><a class="btn btn-warning btn-xs" href="<?php menu_page_url( 'ads-new-submenu', true );  ?>&id=" id="editCap">
+                        <i class="glyphicon glyphicon-pencil"></i> تعديل
+                    </a>
+                    <a class="btn btn-danger btn-xs" href="#" id="deleteCap" data-id="">
+                        <i class="glyphicon glyphicon-remove"></i> حذف
+                    </a>
 
 
             </tr>
