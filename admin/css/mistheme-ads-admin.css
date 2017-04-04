@@ -48,6 +48,9 @@ table.table.option-table {
 .map-btn .btn {
     margin-top: 15px;
 }
+.stat-btn .btn {
+    margin-top: 15px;
+}
 .panel-footer ul.list-group {
     margin-bottom: 0px!important;
 }

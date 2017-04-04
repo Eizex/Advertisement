@@ -63,7 +63,16 @@ function display_mistheme_newAd_submenu(){
         $objectMapCap = $Ad_object->Ad_showonmap_captain;
         $objectMapUser = $Ad_object->Ad_showonmap_user;
     }
-
+    if($objectMapCap == 0){
+        $capDisabled = " disabled";
+    }else{
+        $capDisabled = "";
+    }
+    if($objectNotifyUser == 0){
+        $userDisabled = " disabled";
+    }else{
+        $userDisabled = "";
+    }
     //var_dump($ad_id);
     ?>
     <div class="wrap">
@@ -314,18 +323,9 @@ function display_mistheme_newAd_submenu(){
                                         </div>
                                         <div id="capOpt" <?php echo $objectShowtoCap == 0 ? 'style="display: none;"':''; ?>>
                                             <div class="form-group">
-                                                <label for="Ad_cap_notify" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_cap_notify; ?></label>
-                                                <div class="radio-inline">
-                                                    <label>
-                                                        <input required type="radio" name="Ad_cap_notify" id="Ad_cap_notify1" value="1" <?php checked( $objectNotifyCap, 1); ?>/>
-                                                        نعم
-                                                    </label>
-                                                </div>
-                                                <div class="radio-inline">
-                                                    <label>
-                                                        <input required type="radio" name="Ad_cap_notify" id="Ad_cap_notify2" value="0" <?php checked( $objectNotifyCap, 0); ?>/>
-                                                        لا
-                                                    </label>
+                                                <label for="Ad_cap_view_no" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_cap_view_no; ?></label>
+                                                <div class="<?php echo $input_class; ?>">
+                                                    <input required type="number" class="form-control" name="Ad_cap_view_no" id="Ad_cap_view_no" placeholder="<?php echo $Ad_cap_view_no; ?>" value="<?php echo ($Ad_object!= null) ? $Ad_object->Ad_cap_view_no : '0'; ?>"/>
                                                 </div>
                                             </div>
                                             <div class="form-group">
@@ -344,9 +344,18 @@ function display_mistheme_newAd_submenu(){
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="Ad_cap_view_no" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_cap_view_no; ?></label>
-                                                <div class="<?php echo $input_class; ?>">
-                                                    <input required type="number" class="form-control" name="Ad_cap_view_no" id="Ad_cap_view_no" placeholder="<?php echo $Ad_cap_view_no; ?>" value="<?php echo ($Ad_object!= null) ? $Ad_object->Ad_cap_view_no : '0'; ?>"/>
+                                                <label for="Ad_cap_notify" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_cap_notify; ?></label>
+                                                <div class="radio-inline">
+                                                    <label>
+                                                        <input required type="radio" name="Ad_cap_notify" id="Ad_cap_notify1" value="1" <?php checked( $objectNotifyCap, 1); echo $capDisabled; ?> />
+                                                        نعم
+                                                    </label>
+                                                </div>
+                                                <div class="radio-inline">
+                                                    <label>
+                                                        <input required type="radio" name="Ad_cap_notify" id="Ad_cap_notify2" value="0" <?php checked( $objectNotifyCap, 0); echo $capDisabled; ?>/>
+                                                        لا
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
@@ -369,6 +378,12 @@ function display_mistheme_newAd_submenu(){
                                         </div>
                                         <div id="userOpt" <?php echo $objectShowtoUser == 0 ? 'style="display: none;"':''; ?>>
                                             <div class="form-group">
+                                                <label for="Ad_user_view_no" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_user_view_no; ?></label>
+                                                <div class="<?php echo $input_class; ?>">
+                                                    <input required type="number" class="form-control" name="Ad_user_view_no" id="Ad_user_view_no" placeholder="<?php echo $Ad_user_view_no; ?>" value="<?php echo ($Ad_object!= null) ? $Ad_object->Ad_user_view_no : '0'; ?>"/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
                                                 <label for="Ad_user_notify" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_user_notify; ?></label>
                                                 <div class="radio-inline">
                                                     <label>
@@ -387,23 +402,18 @@ function display_mistheme_newAd_submenu(){
                                                 <label for="Ad_showonmap_user" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_showonmap_user; ?></label>
                                                 <div class="radio-inline">
                                                     <label>
-                                                        <input required type="radio" name="Ad_showonmap_user" id="Ad_showonmap_user1" value="1" <?php checked( $objectMapUser, 1); ?>/>
+                                                        <input required type="radio" name="Ad_showonmap_user" id="Ad_showonmap_user1" value="1" <?php checked( $objectMapUser, 1); echo $userDisabled; ?>/>
                                                         نعم
                                                     </label>
                                                 </div>
                                                 <div class="radio-inline">
                                                     <label>
-                                                        <input required type="radio" name="Ad_showonmap_user" id="Ad_showonmap_user2" value="0" <?php checked( $objectMapUser, 0); ?>/>
+                                                        <input required type="radio" name="Ad_showonmap_user" id="Ad_showonmap_user2" value="0" <?php checked( $objectMapUser, 0); echo $userDisabled; ?>/>
                                                         لا
                                                     </label>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="Ad_user_view_no" class="<?php echo $label_class; ?> control-label"><?php echo $Ad_user_view_no; ?></label>
-                                                <div class="<?php echo $input_class; ?>">
-                                                    <input required type="number" class="form-control" name="Ad_user_view_no" id="Ad_user_view_no" placeholder="<?php echo $Ad_user_view_no; ?>" value="<?php echo ($Ad_object!= null) ? $Ad_object->Ad_user_view_no : '0'; ?>"/>
-                                                </div>
-                                            </div>
+
                                         </div>
                                     </div>
                                 </section>

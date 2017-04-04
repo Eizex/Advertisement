@@ -191,15 +191,39 @@ jQuery(document).ready(function($) {
 
 	$('#Ad_show_to_captain2').on('click', function(e){
 		$('#capOpt').slideUp();
+		$('#Ad_cap_view_no').val('0');
+		$("#Ad_showonmap_captain2").prop("checked", true);
+		$("#Ad_cap_notify2").prop("checked", true).prop("disabled",true);
+		$("#Ad_cap_notify1").prop("disabled",true);
 	});
 	$('#Ad_show_to_captain1').on('click', function(e){
 		$('#capOpt').slideDown();
 	});
 	$('#Ad_show_to_user2').on('click', function(e){
 		$('#userOpt').slideUp();
+		$('#Ad_user_view_no').val('0');
+		$("#Ad_user_notify2").prop("checked", true);
+		$("#Ad_showonmap_user2").prop("checked", true).prop("disabled",true);
+		$("#Ad_showonmap_user1").prop("disabled",true);
 	});
 	$('#Ad_show_to_user1').on('click', function(e){
 		$('#userOpt').slideDown();
+	});
+	$('#Ad_showonmap_captain2').on('click',function(){
+		$("#Ad_cap_notify2").prop("checked", true).prop("disabled",true);
+		$("#Ad_cap_notify1").prop("disabled",true);
+	});
+	$('#Ad_showonmap_captain1').on('click',function(){
+		$("#Ad_cap_notify2").prop("disabled",false);
+		$("#Ad_cap_notify1").prop("disabled",false);
+	});
+	$('#Ad_user_notify2').on('click',function(){
+		$("#Ad_showonmap_user2").prop("checked", true).prop("disabled",true);
+		$("#Ad_showonmap_user1").prop("disabled",true);
+	});
+	$('#Ad_user_notify1').on('click',function(){
+		$("#Ad_showonmap_user2").prop("disabled",false);
+		$("#Ad_showonmap_user1").prop("disabled",false);
 	});
 	$("form#AdForm").submit(function(){
 		var submit = $("#adsFormSubmit");
@@ -290,15 +314,28 @@ jQuery(document).ready(function($) {
 			}, 'json');
 		}
 	});
-	$('.bootstrap-table').on('click', '#btn-map' , function(e){
+	var manageTable = $('.bootstrap-table');
+	manageTable.on('click', '#btn-map' , function(e){
 		$($(this).attr('data-target')).modal("show");
 	});
-	$('.bootstrap-table').on('shown.bs.modal', '.modal', function (e) {
+	manageTable.on('shown.bs.modal', '.map-modal', function (e) {
 		var location = JSON.parse($(e.currentTarget).attr('data-location'));
 		var element = $(e.currentTarget).attr('data-map')
 		myMap(element, location);
 	});
+	manageTable.on('click', '#btn-stat', function(e){
+		$($(this).attr('data-target')).modal("show");
+		var _adId = $(this).attr('data-adid');
+		var contents = {
+			action:	'singleAdStat',
+			ad_id: _adId,
+		};
 
+		$.post(admin_ajax.url, contents,function(data){
+			console.log(data.result);
+			//$('#remoteUserData').html(data.result);
+		}, 'json');
+	});
 	$('.cap-item').on('click',function(e){
 		e.preventDefault();
 		$('.cap-item').each(function(){

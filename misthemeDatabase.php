@@ -93,24 +93,18 @@ function mistheme_AdFormSubmit_callback() {
 	// how many days ????
 	$date1 = new DateTime($ad_Data['Ad_start_date']);
 	$date2 = new DateTime($ad_Data['Ad_end_date']);
-
 	$howmanydays = $date2->diff($date1)->format("%a");
 	$howmanydays++;
 	//$howmanydays = $ad_Data['Ad_end_date']->diff($ad_Data['Ad_start_date'])->format("%a");
-	
 	if($howmanydays > 1){
 		$price = $price * $howmanydays ;
-		
 	}
 	
 	$ad_Data['Ad_price']= $price;
-	
-	
-
 
     $emptyFields = array();
     foreach($ad_Data as $item => $value){
-        if($item != 'Ad_id'){
+        if($item != 'Ad_id' && $item != 'Ad_price'){
             if(($value == "" || $value == null)){
                 array_push($emptyFields, $item);
             }
@@ -136,7 +130,6 @@ function mistheme_AdFormSubmit_callback() {
                 $json['id'] = $adSubmit;
                 $json['action'] = 'insert';
             }
-
         }
     }
 
@@ -690,6 +683,72 @@ function mistheme_selectUserStat_callback() {
 
 
     $json['result'] = $html;
+    echo json_encode( $json );
+    die();
+}
+
+//Single Ad Stat
+function mistheme_getSingleAdStat($ad_id){
+    global $wpdb;
+    $data = array();
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $data[0] = $wpdb->get_results("SELECT COUNT(*) userShow
+                                            FROM $tableNameLogs
+                                            WHERE ad_id = '$ad_id' AND event = 'user_show'")[0];
+    $data[1] = $wpdb->get_results("SELECT COUNT(*) capShow
+                                            FROM $tableNameLogs
+                                            WHERE ad_id = '$ad_id' AND event = 'captain_show'")[0];
+    $data[2] = $wpdb->get_results("SELECT COUNT(*) userNotify
+                                            FROM $tableNameLogs
+                                            WHERE ad_id = '$ad_id' AND event = 'user_notify'")[0];
+    $data[3] = $wpdb->get_results("SELECT COUNT(*) capNotify
+                                            FROM $tableNameLogs
+                                            WHERE ad_id = '$ad_id' AND event = 'captain_notify'")[0];
+    return $data;
+}
+
+function mistheme_getSingleAdLocations($Ad_id){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'advertisement';
+    $get_data = $wpdb->get_row("SELECT Ad_locations FROM $tableName WHERE Ad_id = $Ad_id",'ARRAY_A');
+    $data = explode( ':', $get_data['Ad_locations']);
+    return $data;
+}
+
+function mistheme_getSingleLocationStats($ad_id, $location){
+    global $wpdb;
+    $data = array();
+    $wpdb->hide_errors();
+    $tableNameLogs = $wpdb->prefix.'adlogs';
+    $data[0] = $wpdb->get_results("SELECT COUNT(*) capLoc
+                                   FROM $tableNameLogs
+                                   WHERE ad_id = '$ad_id' AND event = 'captain_show' AND meta = '$location'")[0];
+    $data[1] = $wpdb->get_results("SELECT COUNT(*) userLoc
+                                   FROM $tableNameLogs
+                                   WHERE ad_id = '$ad_id' AND event = 'user_notify' AND meta = '$location'")[0];
+    return $data;
+}
+add_action( 'wp_ajax_nopriv_singleAdStat', 'mistheme_singleAdStat_callback' );
+add_action( 'wp_ajax_singleAdStat', 'mistheme_singleAdStat_callback' );
+
+function mistheme_singleAdStat_callback() {
+    $json = array();
+    $ad_id = $_POST['ad_id'];
+    $statData = mistheme_getSingleAdStat($ad_id);
+    $adLocations = mistheme_getSingleAdLocations($ad_id);
+    //var_dump($adLocations);
+    $locationArray = array(); $index = 0;
+    foreach($adLocations as $location){
+        $locationData = mistheme_getSingleLocationStats($ad_id,$location);
+        $locationArray[$index]['location'] = $location;
+        $locationArray[$index]['capCount'] = $locationData[0]->capLoc;
+        $locationArray[$index]['userCount'] = $locationData[1]->userLoc;
+        $index++;
+    }
+
+    $json['result'] = $locationArray;
     echo json_encode( $json );
     die();
 }

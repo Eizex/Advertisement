@@ -1,12 +1,4 @@
 ﻿<?php
-function mistheme_getFinance(){
-    global $wpdb;
-    $wpdb->hide_errors();
-    $tableName = $wpdb->prefix.'finance';
-    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
-    return $get_data;
-}
-
 function display_mistheme_adFinance_submenu() {
     if ( !current_user_can( 'manage_options' ) )  {
         wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
