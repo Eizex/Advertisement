@@ -301,6 +301,15 @@ function mistheme_getPrices(){
     return $get_data;
 }
 
+// Captain table
+
+function mistheme_getCaptains(){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'captains';
+    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
+    return $get_data;
+}
 
 /*
  * Captain Stats

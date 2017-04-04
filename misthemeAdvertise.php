@@ -15,6 +15,8 @@ require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-edit.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-manage.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-stat.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-finance.php';
+//require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-captains.php';
+
 
 /*
  * Add custom style sheet to admin page 
@@ -52,6 +54,7 @@ function mistheme_quiz_create_table($prefix) {
           Ad_user_view_no int(11) NOT NULL,
           Ad_cap_view_log int(11) NOT NULL,
           Ad_user_view_log int(11) NOT NULL,
+		  Ad_cap_show500_log int(11) NOT NULL,
           Ad_cap_not_log int(11) NOT NULL,
           Ad_user_not_log int(11) NOT NULL,
 		  Ad_price int(11) NOT NULL,
@@ -160,5 +163,7 @@ add_action('admin_menu','mistheme_advertise_submenu');
         add_submenu_page('ads-topmenu', 'اضف إعلان جديد', 'إعلان جديد', 'manage_options', 'ads-new-submenu','display_mistheme_newAd_submenu');
         add_submenu_page('ads-topmenu', 'احصائيات', 'احصائيات', 'manage_options', 'ads-stat-submenu','display_mistheme_statAd_submenu');
         add_submenu_page('ads-topmenu', 'مالية', 'مالية', 'manage_options', 'ads-fin-submenu','display_mistheme_adFinance_submenu');
+		add_submenu_page('ads-topmenu', 'الكابتين', 'الكابتين', 'manage_options', 'ads-cap-submenu','display_mistheme_adCaptains_submenu');
+
     }
 
