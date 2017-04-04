@@ -227,19 +227,16 @@ function display_mistheme_advertise() {
                         '<a class="btn btn-primary btn-sm form-control" role="button" id="btn-stat" data-target="#stat-modal-'+Number(row.Ad_id)+'" data-adid="'+row.Ad_id+'">',
                             '<span>عرض احصائيات الاعلان</span>',
                         '</a>',
-                        '<div class="modal fade stat-modal" id="stat-modal-' + Number(row.Ad_id) + '" tabindex="-1" role="dialog" data-adid="'+row.Ad_id+'">',
+                        '<div class="modal fade stat-modal" id="stat-modal-' + Number(row.Ad_id) + '" tabindex="-1" role="dialog" data-adid="'+row.Ad_id+'" data-map="statMap' + Number(row.Ad_id) + '">',
                             '<div class="modal-dialog modal-lg" role="document">',
                                 '<div class="modal-content" style="width: 100%;height: 500px">',
                                     '<div id="adStatContent" class="row statContainer">',
-                                        '<div class="col-sm-9">',
+                                        '<div class="col-sm-9" style="height: 500px;">',
+                                            '<input type="hidden" id="statLoc'+Number(row.Ad_id)+'" value="">',
                                             '<div id="statMap' + Number(row.Ad_id) + '" class="mapContainer"></div>',
                                         '</div>',
                                         '<div class="col-sm-3">',
-                                            '<div id="statData'+ Number(row.Ad_id) + '">',
-                                                '<div class="panel panel-default">',
-                                                    '<div class="panel-heading">عدد مرات الظهور للكابتن</div>',
-                                                    '<div class="panel-body">Panel content</div>',
-                                                '</div>',
+                                            '<div id="statData'+ Number(row.Ad_id) + '" style="padding-left: 5px; padding-top: 5px;">',
                                             '</div>',
                                         '</div>',
                                     '</div>',
@@ -394,6 +391,68 @@ function display_mistheme_advertise() {
                 allMarkers.push(marker);
             }
 
+            var allStatMarkers = [];
+            function myStatMap(element, location){
+                var mapCanvas = document.getElementById(element);
+                var myCenter = new google.maps.LatLng(24.647017162630366,44.589385986328124);
+                var mapOptions = {center: myCenter, zoom: 5,streetViewControl: false};
+                var map = new google.maps.Map(mapCanvas, mapOptions);
+
+                var imageCap = {
+                    url: "<?php echo plugins_url( 'admin/img/markerCap.png', dirname(__FILE__) ); ?>",
+                    scaledSize: new google.maps.Size(50, 50),
+                    labelOrigin: new google.maps.Point(18, 22),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(50, 50)
+                };
+                var imageUser = {
+                    url: "<?php echo plugins_url( 'admin/img/markerUser.png', dirname(__FILE__) ); ?>",
+                    scaledSize: new google.maps.Size(50, 50),
+                    labelOrigin: new google.maps.Point(18, 22),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(50, 50)
+                };
+                var imageDef = {
+                    url: "<?php echo plugins_url( 'admin/img/markerDefault.png', dirname(__FILE__) ); ?>",
+                    scaledSize: new google.maps.Size(50, 50),
+                    labelOrigin: new google.maps.Point(18, 22),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(50, 50)
+                };
+                for(i = 0; i < location.length; i++){
+                    var image = ''
+                    if((Number(location[i]['capCount']) != 0 && Number(location[i]['userCount']) != 0) || (Number(location[i]['capCount']) == 0 && Number(location[i]['userCount']) == 0) ){
+                        image = imageDef;
+                    }else if(Number(location[i]['capCount']) == 0 && Number(location[i]['userCount']) != 0){
+                        image = imageUser;
+                    }else if(Number(location[i]['capCount']) != 0 && Number(location[i]['userCount']) == 0){
+                        image = imageCap;
+                    }
+                    var marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(location[i]['location'].split(",")[0],location[i]['location'].split(",")[1]),
+                        label: (Number(location[i]['capCount']) + Number(location[i]['userCount'])).toString(),
+                        map: map,
+                        icon: image,
+                    });
+                    var content = '<ul style="margin-top: 15px">'+
+                        '<li>' +
+                        '<span>المستخدم: </span>' +
+                        '<span>'+location[i]['userCount']+'</span>' +
+                        '</li>'+
+                        '<li>' +
+                        '<span>الكابتن: </span>' +
+                        '<span>'+location[i]['capCount']+'</span>' +
+                        '</li>'+
+                        '</ul>';
+                    var infoWindow = new google.maps.InfoWindow();
+                    google.maps.event.addListener(marker,'click', (function(marker,content,infoWindow){
+                        return function() {
+                            infoWindow.setContent(content);
+                            infoWindow.open(map,marker);
+                        };
+                    })(marker,content,infoWindow));
+            }
+            }
         </script>
     </div>
     <?php

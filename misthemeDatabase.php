@@ -744,7 +744,71 @@ add_action( 'wp_ajax_singleAdStat', 'mistheme_singleAdStat_callback' );
 
 function mistheme_singleAdStat_callback() {
     $json = array();
+    $locationArray = array();
+    $statsArray = array();
     $ad_id = $_POST['ad_id'];
+    $statData = mistheme_getSingleAdStat($ad_id);
+    $adLocations = mistheme_getSingleAdLocations($ad_id);
+    //var_dump($statData);
+    foreach($statData as $stat){
+        foreach($stat as $item => $value){
+            $statsArray[$item] = $value;
+        }
+    }
+
+    $index = 0;
+    foreach($adLocations as $location){
+        $locationData = mistheme_getSingleLocationStats($ad_id,$location);
+        $locationArray[$index]['location'] = $location;
+        $locationArray[$index]['capCount'] = $locationData[0]->capLoc;
+        $locationArray[$index]['userCount'] = $locationData[1]->userLoc;
+        $index++;
+    }
+    //var_dump($statsArray);
+    $html = '
+       <div class="panel-group">
+           <div class="panel panel-primary">
+              <div class="panel-heading">عدد مرات الظهور </div>
+               <ul class="list-group">
+                    <li class="list-group-item">
+                        <span>المستخدم: </span>
+                        <span> '.$statsArray['userShow'].'</span>
+                    </li>
+                    <li class="list-group-item">
+                        <span>الكابتن: </span>
+                        <span> '.$statsArray['capShow'].'</span>
+                    </li>
+              </ul>
+           </div>
+             <div class="panel panel-primary">
+              <div class="panel-heading">عدد مرات ظهور التنبيهات </div>
+               <ul class="list-group">
+                    <li class="list-group-item">
+                        <span>المستخدم: </span>
+                        <span> '.$statsArray['userNotify'].'</span>
+                    </li>
+                    <li class="list-group-item">
+                        <span>الكابتن: </span>
+                        <span> '.$statsArray['capNotify'].'</span>
+                    </li>
+              </ul>
+           </div>
+       </div>
+    ';
+    $json['result'] = $locationArray;
+    $json['stats'] = $html;
+    echo json_encode( $json );
+    die();
+}
+
+add_action( 'wp_ajax_nopriv_adPaidSubmit', 'mistheme_adPaidSubmit_callback' );
+add_action( 'wp_ajax_adPaidSubmit', 'mistheme_adPaidSubmit_callback' );
+
+function mistheme_adPaidSubmit_callback() {
+    $json = array();
+    $ad_id = $_POST['ad_id'];
+    $nonce = $_POST['ad_id'];
+    $paidTxt = $_POST['paidtxt'];
     $statData = mistheme_getSingleAdStat($ad_id);
     $adLocations = mistheme_getSingleAdLocations($ad_id);
     //var_dump($adLocations);

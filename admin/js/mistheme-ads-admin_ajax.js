@@ -324,7 +324,7 @@ jQuery(document).ready(function($) {
 		myMap(element, location);
 	});
 	manageTable.on('click', '#btn-stat', function(e){
-		$($(this).attr('data-target')).modal("show");
+		var modalTag = $(this);
 		var _adId = $(this).attr('data-adid');
 		var contents = {
 			action:	'singleAdStat',
@@ -333,8 +333,16 @@ jQuery(document).ready(function($) {
 
 		$.post(admin_ajax.url, contents,function(data){
 			console.log(data.result);
-			//$('#remoteUserData').html(data.result);
+			$(modalTag.attr('data-target')).attr('data-loc', JSON.stringify(data.result));
+			$('#statData'+_adId).html(data.stats);
+			$(modalTag.attr('data-target')).modal("show");
 		}, 'json');
+	});
+	manageTable.on('shown.bs.modal', '.stat-modal', function (e) {
+		var location = JSON.parse($(e.currentTarget).attr('data-loc'));
+		var element = $(e.currentTarget).attr('data-map')
+		console.log(location,element);
+		myStatMap(element, location);
 	});
 	$('.cap-item').on('click',function(e){
 		e.preventDefault();
@@ -415,4 +423,45 @@ jQuery(document).ready(function($) {
             $('#remoteUserData').html(data.result);
         }, 'json');
     });
+
+	$("form#paid-form").submit(function(){
+		var submit = $("#paid-btn");
+		var message	= $("#msgBox");
+		//if(submit.hasClass('disabled')){
+		//	message.html('<div class="alert alert-danger fade in">'+
+		//			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
+		//			'<p class="login-msg">بعض المدخلات فارغة أو غير صحيحة</p></div>');
+		//	return;
+		//}
+
+		var contents = {
+			action: 				'adPaidSubmit',
+			nonce: 					this.adPriceSubmit_nonce.value,
+			ad_id: 					this.ad_id.value,
+			paidtxt: 				this.paidtext.value,
+		};
+
+
+		//submit.attr("disabled", "disabled").addClass('btn-warning disabled');
+		//var submit_value = submit.html();
+		//submit.html("<i class='fa fa-cog fa-spin'></i>");
+
+		$.post( admin_ajax.url, contents, function( data ){
+			console.log(contents);
+			submit.removeAttr("disabled").removeClass('btn-warning disabled');
+			submit.html(submit_value);
+			if( data.success == 1) {
+				message.html(data.msg);
+				if(data.action == 'insert'){
+					$('#Ad_id').val(data.id).attr('value',data.id);
+					var url = new Url;
+					url.query['id'] = data.id;
+					window.history.pushState('', '', url.toString());
+				}
+			} else {
+				message.html(data.msg);
+			}
+		}, 'json');
+		return false;
+	});
 });

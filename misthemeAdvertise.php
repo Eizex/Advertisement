@@ -15,7 +15,7 @@ require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-edit.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-manage.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-stat.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-finance.php';
-//require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-captains.php';
+require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-captain.php';
 
 
 /*
