@@ -23,7 +23,7 @@ function display_mistheme_adFinance_submenu() {
                         <th width="20%">الباقي</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="paidBody">
                     <?php
 					$AllPrices=0;
 					$AllPaid=0;
@@ -51,6 +51,8 @@ function display_mistheme_adFinance_submenu() {
                         <?php
                     }
                     ?>
+					</tbody>
+					<tfoot id="paidFooter">
 					    <tr>
 							<th width="20%" >
 								المجموع
@@ -58,21 +60,22 @@ function display_mistheme_adFinance_submenu() {
 							<th>
 								**							
 							</th>
-							<th>
+							<th id="totalPrice">
 								<?php echo $AllPrices; ?>
 							</th>
-							<th>
+							<th id="totalPaid">
 								<?php echo $AllPaid; ?>
 							</th>
 							
-							<th>
+							<th id="totalRemain">
 								<?php echo $AllRemaining; ?>
 							</th>
 							
 						</tr>
+					</tfoot>
 
 
-                    </tbody>
+                    
                 </table>
             </div>
         </div>

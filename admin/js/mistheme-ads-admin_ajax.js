@@ -529,22 +529,27 @@ jQuery(document).ready(function($) {
 			adprice:				this.Ad_price.value,
 		};
 
-
-		submit.attr("disabled", "disabled").addClass('btn-warning disabled');
+		
+		 submit.attr("disabled", "disabled").addClass('btn-warning disabled');
 		var submit_value = submit.html();
-		submit.html("<i class='fa fa-cog fa-spin'></i>");
+		submit.html("<i class='fa fa-cog fa-spin'></i>"); 
 
 		$.post( admin_ajax.url, contents, function( data ){
 			//console.log(contents,data);
 			submit.html(submit_value).removeAttr('disabled').removeClass('btn-warning disabled')
-			if(data.result == true){
+			if(data.result == false){
+				$('#paidAd'+contents.ad_id).addClass('danger')
+				
+			}else{
 				$('#paidAd'+contents.ad_id).addClass('success')
 				var remain = Number(contents.adprice) - Number(contents.paidtxt);
 				$('#remaining'+contents.ad_id).html(remain);
-			}else{
-				$('#paidAd'+contents.ad_id).addClass('danger')
+				$('#totalPaid').html(data.result);
+				var totalPrice = Number($('#totalPrice').text());
+				$('#totalRemain').html(totalPrice - Number(data.result));
 			}
 		}, 'json');
+		
 		return false;
 	});
 
@@ -595,4 +600,6 @@ jQuery(document).ready(function($) {
 		}, 'json');
 		return false;
 	});
+	
+	
 });

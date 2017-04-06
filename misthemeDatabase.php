@@ -966,7 +966,7 @@ function mistheme_updateSingleAdPaid($ad_id, $paid){
     if ($check_updated === FALSE){
         return false;
     } else {
-        return true;
+        return $wpdb->get_results("SELECT SUM(Ad_paid) totalPaid FROM $tableName")[0]->totalPaid;
     }
 }
 
@@ -988,7 +988,9 @@ function mistheme_adPaidSubmit_callback() {
     }
 
     $checkUpdated = mistheme_updateSingleAdPaid($ad_id,$paidTxt);
+
     $json['result'] = $checkUpdated;
+	
     echo json_encode( $json );
     die();
 }
