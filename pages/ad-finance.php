@@ -25,12 +25,15 @@ function display_mistheme_adFinance_submenu() {
                     </thead>
                     <tbody>
                     <?php
+					$AllPrices=0;
+					$AllPaid=0;
+					$AllRemaining=0;
                     foreach($data as $row){
                         ?>
                         <tr id="<?php echo 'paidAd'.$row['Ad_id']; ?>">
                             <td><?php echo $row['Ad_id']; ?></td>
                             <td><?php echo $row['Ad_ar_name']; ?></td>
-                            <td><?php echo $row['Ad_price']; ?></td>
+                            <td><?php echo $row['Ad_price']; $AllPrices+=$row['Ad_price']; ?></td>
                             <td>
                                 <form method="post" id="paid-form">
                                     <?php
@@ -39,15 +42,35 @@ function display_mistheme_adFinance_submenu() {
                                     ?>
                                     <input type="text" name="ad_id" id="ad_id" value="<?php echo $row['Ad_id']; ?>" hidden="hidden" />
                                     <input type="text" name="Ad_price" id="Ad_price" value="<?php echo $row['Ad_price']; ?>" hidden="hidden" />
-                                    <input type="text" name="paidtext" id="paid-<?php echo $row['Ad_id']; ?>" style="width: 60px;" value="<?php echo $row['Ad_paid']; ?>">
+                                    <input type="text" name="paidtext" id="paid-<?php echo $row['Ad_id']; ?>" style="width: 60px;" value="<?php echo $row['Ad_paid']; $AllPaid+=$row['Ad_paid']; ?>">
                                     <button class="btn btn-default btn-sm" type="submit" name="submit" name="paid_btn" id="paid_btn">حفظ</button>
                                 </form>
                             </td>
-                            <td id="remaining<?php echo $row['Ad_id']; ?>"><?php echo $row['Ad_price'] - $row['Ad_paid']; ?></td>
+                            <td id="remaining<?php echo $row['Ad_id']; ?>"><?php $Remaining= $row['Ad_price'] - $row['Ad_paid']; echo $Remaining; $AllRemaining+=$Remaining; ?></td>
                         </tr>
                         <?php
                     }
                     ?>
+					    <tr>
+							<th width="20%" >
+								المجموع
+							</th>
+							<th>
+								**							
+							</th>
+							<th>
+								<?php echo $AllPrices; ?>
+							</th>
+							<th>
+								<?php echo $AllPaid; ?>
+							</th>
+							
+							<th>
+								<?php echo $AllRemaining; ?>
+							</th>
+							
+						</tr>
+
 
                     </tbody>
                 </table>
