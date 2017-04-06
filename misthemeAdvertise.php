@@ -17,7 +17,7 @@ require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-stat.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-finance.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-captain.php';
 
-
+define('GOOGLE_MAPS_API','AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8');
 /*
  * Add custom style sheet to admin page 
 */
@@ -103,6 +103,7 @@ function mistheme_quiz_create_table($prefix) {
 	$addprices = 
 	'INSERT INTO ' . $prefix . 'prices (`id`, `picture_price`, `video_price`, `priority_price`, `showtocap_price`, `notifycap_price`, `mapcap_price`, `showtouser_price`, `notifyuser_price`, `mapuser_price`, `cap100view_price`, `user100view_price`, `pluslocation_price`) VALUES
 (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);';
+
     $capTable = '
     CREATE TABLE IF NOT EXISTS ' . $prefix . 'captains (
       Cap_ID int(11) NOT NULL AUTO_INCREMENT,

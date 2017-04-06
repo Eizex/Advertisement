@@ -101,3 +101,10 @@ div#remoteUserData {
     width: 100%;
     border-top: 1px solid #ddd;
 }
+.contactDrop{
+    width: 20%;
+    display: inline-block;
+    padding: 22.5px;
+    cursor: pointer;
+    border-right: 1px solid #dddddd;
+}

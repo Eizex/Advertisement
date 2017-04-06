@@ -219,7 +219,7 @@ function display_mistheme_newAd_submenu(){
                                     <div style="width: 100%;height: 400px" class="">
                                         <div id="map"></div>
                                     </div>
-                                    <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8"></script>
+                                    <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<?php echo GOOGLE_MAPS_API; ?>"></script>
                                     <script>
                                         var labelIndex = 1;
                                         var allMarkers = [];
@@ -463,7 +463,7 @@ function display_mistheme_newAd_submenu(){
                                     <div class="form-group">
                                         <label for="Advertiser_website" class="<?php echo $label_class; ?> control-label"><?php echo $Advertiser_website; ?></label>
                                         <div class="<?php echo $input_class; ?>">
-                                            <input required type="URL" class="form-control" name="Advertiser_website" id="Advertiser_website" placeholder="<?php echo $Advertiser_website; ?>" value="<?php echo ($Ad_object!= null) ? $Ad_object->Advertiser_website : ''; ?>"/>
+                                            <input type="URL" class="form-control" name="Advertiser_website" id="Advertiser_website" placeholder="<?php echo $Advertiser_website; ?>" value="<?php echo ($Ad_object!= null) ? $Ad_object->Advertiser_website : ''; ?>"/>
                                             <div class="help-block text-left">http://www.example.com</div>
                                         </div>
                                     </div>

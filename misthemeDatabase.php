@@ -104,7 +104,7 @@ function mistheme_AdFormSubmit_callback() {
 
     $emptyFields = array();
     foreach($ad_Data as $item => $value){
-        if($item != 'Ad_id' && $item != 'Ad_price'){
+        if($item != 'Ad_id' && $item != 'Ad_price' && $item != 'Advertiser_website'){
             if(($value == "" || $value == null)){
                 array_push($emptyFields, $item);
             }
@@ -223,7 +223,6 @@ function mistheme_create_ad($data=array()){
             return 'updated';
         }
     }
-
 }
 
 function mistheme_get_allAds(){
@@ -303,12 +302,153 @@ function mistheme_getPrices(){
 
 // Captain table
 
-function mistheme_getCaptains(){
+//function mistheme_getCaptains(){
+//    global $wpdb;
+//    $wpdb->hide_errors();
+//    $tableName = $wpdb->prefix.'captains';
+//    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
+//    return $get_data;
+//}
+add_action( 'wp_ajax_nopriv_capTableData', 'mistheme_capTableData_callback' );
+add_action( 'wp_ajax_capTableData', 'mistheme_capTableData_callback' );
+
+function mistheme_capTableData_callback() {
+    $json = array();
+    global $wpdb;
+    $tableData = mistheme_getAllCaps();
+    $json['total'] = $wpdb->num_rows;
+    $json['rows'] = $tableData;
+    echo json_encode( $json );
+    die();
+}
+
+add_action( 'wp_ajax_nopriv_updateCapPass', 'mistheme_updateCapPass_callback' );
+add_action( 'wp_ajax_updateCapPass', 'mistheme_updateCapPass_callback' );
+
+function mistheme_updateCapPass_callback() {
+    $json = array();
+    $errors = new WP_Error();
+    $cap_id = $_POST['cap_id'];
+    $password = $_POST['newPass'];
+    $nonce = $_POST['nonce'];
+
+    if ( ! wp_verify_nonce( $nonce, 'capPassWordSubmit_action' ) ){
+        $errors->add('badNonce', 'Security Error!');
+        if ($errors->get_error_code()){
+            $json['result'] = false;
+            die(json_encode( $json ));
+        }
+    }
+    $json['result'] = mistheme_updateSingleCapPass($cap_id,$password);
+    echo json_encode( $json );
+    die();
+}
+
+function mistheme_updateSingleCapPass($cap_id, $password){
     global $wpdb;
     $wpdb->hide_errors();
     $tableName = $wpdb->prefix.'captains';
-    $get_data = $wpdb->get_results("SELECT * FROM $tableName", 'ARRAY_A');
-    return $get_data;
+    $check_updated = $wpdb->update($tableName, array('Cap_Password'=>$password), array('Cap_ID'=>absint($cap_id)));
+    if ($check_updated === FALSE){
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function mistheme_deleteSingleCap($cap_id){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableNameCap = $wpdb->prefix.'captains';
+    $tableNameStat = $wpdb->prefix.'adlogs';
+    $capName = $wpdb->get_row("SELECT Cap_Username FROM $tableNameCap WHERE Cap_ID = $cap_id");
+    //var_dump($capName->Cap_Username);
+    $dataStat = $wpdb->delete( $tableNameStat, array( 'capname' => $capName->Cap_Username ) );
+    $data = FALSE;
+    if($dataStat !== FALSE){
+        $data = $wpdb->delete( $tableNameCap, array( 'Cap_ID' => $cap_id ) );
+    }
+    if ($data === FALSE){
+        return false;
+    } else {
+        return true;
+    }
+}
+
+add_action( 'wp_ajax_nopriv_capDelete', 'mistheme_capDelete_callback' );
+add_action( 'wp_ajax_capDelete', 'mistheme_capDelete_callback' );
+
+function mistheme_capDelete_callback() {
+    $json = array();
+    $errors = new WP_Error();
+    $nonce = $_POST['nonce'];
+    $cap_id = $_POST['cap_id'];
+
+    if ( ! wp_verify_nonce( $nonce, 'capTable_action' ) ){
+        $errors->add('badNonce', 'Security Error!');
+        if ($errors->get_error_code()){
+            $json['result'] = false;
+            die(json_encode( $json ));
+        }
+    }
+    $json['result'] = mistheme_deleteSingleCap($cap_id);
+    echo json_encode( $json );
+    die();
+}
+
+function mistheme_createCap($capname, $password){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'captains';
+    $wpdb->insert($tableName, array('Cap_Username'=> $capname, 'Cap_Password'=>$password,'Cap_WorkingTime'=>0,'Cap_WorkingDistance'=>0));
+    if ($wpdb->insert_id) {
+        $check_row = $wpdb->get_row("SELECT * FROM $tableName WHERE Cap_ID = $wpdb->insert_id ");
+        return $check_row;
+    } else {
+        return false;
+    }
+}
+
+function mistheme_checkCapUsername($capname){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'captains';
+    $check_row = $wpdb->get_row("SELECT * FROM $tableName WHERE Cap_Username = '$capname'");
+    if($check_row === null){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+add_action( 'wp_ajax_nopriv_capNew', 'mistheme_capNew_callback' );
+add_action( 'wp_ajax_capNew', 'mistheme_capNew_callback' );
+
+function mistheme_capNew_callback() {
+    $json = array();
+    $errors = new WP_Error();
+    $nonce = $_POST['nonce'];
+    $capName = $_POST['capName'];
+    $capPass = $_POST['capPass'];
+
+    if ( ! wp_verify_nonce( $nonce, 'capNew_action' ) ){
+        $errors->add('badNonce', 'Security Error!');
+        if ($errors->get_error_code()){
+            $json['result'] = false;
+            $json['msg'] = 'حاول مرة أخرى';
+            die(json_encode( $json ));
+        }
+    }
+    if(!mistheme_checkCapUsername($capName)){
+        $json['result'] = false;
+        $json['msg'] = 'اسم الكابتن مُستخدم';
+        die(json_encode( $json ));
+    }else{
+        $json['result'] = mistheme_createCap($capName,$capPass);
+    }
+
+    echo json_encode( $json );
+    die();
 }
 
 /*
@@ -532,7 +672,7 @@ function mistheme_selectCapStat_callback() {
         ';
     }elseif($event == "cap_map"){
         $queryData = mistheme_getCapMap($cap, $startDate,$endDate);
-        $html = '<div id="mapCap" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8&callback=initMap"></script>';
+        $html = '<div id="mapCap" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key='. GOOGLE_MAPS_API .'&callback=initMap"></script>';
         $html .= '<script>
                 function initMap() {
                     var mapCanvas = document.getElementById("mapCap");
@@ -639,7 +779,7 @@ function mistheme_selectUserStat_callback() {
         $totalTXT = 'قائمة الإعلانات التي ظهرت على الخارطة بعد النقر عليها: ';
     }
     if($event == "user_map"){
-        $html = '<div id="map" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8&callback=initMap"></script>';
+        $html = '<div id="map" class="mapContainer"></div><script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key='. GOOGLE_MAPS_API .'&callback=initMap"></script>';
         $html .= '<script>
 
                 function initMap() {
@@ -780,7 +920,7 @@ function mistheme_singleAdStat_callback() {
                     </li>
               </ul>
            </div>
-             <div class="panel panel-primary">
+           <div class="panel panel-primary">
               <div class="panel-heading">عدد مرات ظهور التنبيهات </div>
                <ul class="list-group">
                     <li class="list-group-item">
@@ -793,6 +933,23 @@ function mistheme_singleAdStat_callback() {
                     </li>
               </ul>
            </div>
+           <div class="panel panel-primary">
+              <div class="panel-heading">علامات الخريطة </div>
+               <ul class="list-group">
+                    <li class="list-group-item">
+                        <img src="'. plugins_url('admin/img/markerDefault.png', (__FILE__) ).'" style="width:18%;display:inline;" class="img-responsive" alt="Default Image">
+                        <span>  للمستخدم والكابتن</span>
+                    </li>
+                    <li class="list-group-item">
+                        <img src="'. plugins_url('admin/img/markerCap.png', (__FILE__) ).'" style="width:18%;display:inline;" class="img-responsive" alt="Captain Image">
+                        <span>  للكابتن</span>
+                    </li>
+                    <li class="list-group-item">
+                        <img src="'. plugins_url('admin/img/markerUser.png', (__FILE__) ).'" style="width:18%;display:inline;" class="img-responsive" alt="‘User Image">
+                        <span>  للمستخدم</span>
+                    </li>
+              </ul>
+           </div>
        </div>
     ';
     $json['result'] = $locationArray;
@@ -801,27 +958,77 @@ function mistheme_singleAdStat_callback() {
     die();
 }
 
+function mistheme_updateSingleAdPaid($ad_id, $paid){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'advertisement';
+    $check_updated = $wpdb->update($tableName, array('Ad_paid'=>absint($paid)), array('Ad_id'=>absint($ad_id)));
+    if ($check_updated === FALSE){
+        return false;
+    } else {
+        return true;
+    }
+}
+
 add_action( 'wp_ajax_nopriv_adPaidSubmit', 'mistheme_adPaidSubmit_callback' );
 add_action( 'wp_ajax_adPaidSubmit', 'mistheme_adPaidSubmit_callback' );
 
 function mistheme_adPaidSubmit_callback() {
     $json = array();
+    $errors =  new WP_Error();
     $ad_id = $_POST['ad_id'];
-    $nonce = $_POST['ad_id'];
     $paidTxt = $_POST['paidtxt'];
-    $statData = mistheme_getSingleAdStat($ad_id);
-    $adLocations = mistheme_getSingleAdLocations($ad_id);
-    //var_dump($adLocations);
-    $locationArray = array(); $index = 0;
-    foreach($adLocations as $location){
-        $locationData = mistheme_getSingleLocationStats($ad_id,$location);
-        $locationArray[$index]['location'] = $location;
-        $locationArray[$index]['capCount'] = $locationData[0]->capLoc;
-        $locationArray[$index]['userCount'] = $locationData[1]->userLoc;
-        $index++;
+    $nonce = $_POST['nonce'];
+    if ( ! wp_verify_nonce( $nonce, 'adPaidSubmit_action' ) ){
+        $errors->add('badNonce', 'Security Error!');
+        if ($errors->get_error_code()){
+            $json['result'] = false;
+            die(json_encode( $json ));
+        }
     }
 
-    $json['result'] = $locationArray;
+    $checkUpdated = mistheme_updateSingleAdPaid($ad_id,$paidTxt);
+    $json['result'] = $checkUpdated;
     echo json_encode( $json );
     die();
+}
+
+add_action( 'wp_ajax_nopriv_adPriceCustomSubmit', 'mistheme_adPriceCustomSubmit_callback' );
+add_action( 'wp_ajax_adPriceCustomSubmit', 'mistheme_adPriceCustomSubmit_callback' );
+
+function mistheme_adPriceCustomSubmit_callback() {
+    $json = array();
+    $errors =  new WP_Error();
+    $nonce = $_POST['nonce'];
+    $dataForm = $_POST;
+    unset($dataForm['action']);
+    unset($dataForm['nonce']);
+//    foreach($_POST as $item => $value){
+//        if($item != 'nonce' && $item != 'action'){
+//            $dataForm[$item] = $value;
+//        }
+//    }
+    //var_dump($dataForm);
+    if ( !wp_verify_nonce($nonce, 'adPriceCustom_action')){
+        $errors->add('badNonce', 'Security Error!');
+        if ($errors->get_error_code()){
+            $json['result'] = false;
+            die(json_encode( $json ));
+        }
+    }
+    $json['result'] = mistheme_updatePricesRow($dataForm);
+    echo json_encode( $json );
+    die();
+}
+
+function mistheme_updatePricesRow($data){
+    global $wpdb;
+    $wpdb->hide_errors();
+    $tableName = $wpdb->prefix.'prices';
+    $check_updated = $wpdb->update($tableName, $data, array('id'=> 1));
+    if ($check_updated === FALSE){
+        return false;
+    } else {
+        return true;
+    }
 }

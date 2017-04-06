@@ -168,13 +168,17 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 
-	$('.bootstrap-table').on('mouseover','#advertiser-panel', function(e){
-		//console.log($(this));
-		$(this).children('.panel-footer').slideDown();
-	});
-	$('.bootstrap-table').on('mouseleave','#advertiser-panel', function(e){
-		//console.log('out');
-		$(this).children('.panel-footer').slideUp();
+	$('.bootstrap-table').on('click','#advertiser-drop', function(e){
+		var parentNode = $(this).parent().parent();
+		var childNode = parentNode.children('.panel-footer');
+		var selfNode = $(this).children('span');
+		if(childNode.css('display')== 'none'){
+			childNode.slideDown();
+			selfNode.attr('class','glyphicon glyphicon-chevron-up')
+		}else{
+			childNode.slideUp();
+			selfNode.attr('class','glyphicon glyphicon-chevron-down')
+		}
 	});
 
 	$('#clearUploadAd').on('click',function(){
@@ -315,6 +319,9 @@ jQuery(document).ready(function($) {
 		}
 	});
 	var manageTable = $('.bootstrap-table');
+	manageTable.on('expand-row.bs.table',function(){
+		$('[data-toggle="tooltip"]').tooltip();
+	});
 	manageTable.on('click', '#btn-map' , function(e){
 		$($(this).attr('data-target')).modal("show");
 	});
@@ -330,9 +337,13 @@ jQuery(document).ready(function($) {
 			action:	'singleAdStat',
 			ad_id: _adId,
 		};
-
+		modalTag.addClass('btn-warning disabled');
+		var submit_value = modalTag.html();
+		modalTag.html("<i class='fa fa-cog fa-spin'></i>");
 		$.post(admin_ajax.url, contents,function(data){
-			console.log(data.result);
+			//console.log(data.result);
+			modalTag.removeClass('btn-warning disabled');
+			modalTag.html(submit_value);
 			$(modalTag.attr('data-target')).attr('data-loc', JSON.stringify(data.result));
 			$('#statData'+_adId).html(data.stats);
 			$(modalTag.attr('data-target')).modal("show");
@@ -344,6 +355,7 @@ jQuery(document).ready(function($) {
 		console.log(location,element);
 		myStatMap(element, location);
 	});
+
 	$('.cap-item').on('click',function(e){
 		e.preventDefault();
 		$('.cap-item').each(function(){
@@ -369,6 +381,86 @@ jQuery(document).ready(function($) {
             $('#remoteData').html(data.result);
         }, 'json');
     });
+
+	$('#capTable').on('submit', '#capPassForm', function(e){
+		e.preventDefault();
+		var submit = $(this.submitBtn);
+		var contents = {
+			action:	'updateCapPass',
+			cap_id: this.capId.value,
+			newPass: this.capPassword.value,
+			nonce: 	this.capPassWordSubmit_nonce.value,
+			index: this.rowIndex.value,
+		};
+
+		$.post(admin_ajax.url, contents,function(data){
+			console.log(data.result, contents);
+			if(data.result == true){
+				$('#capTable').bootstrapTable('updateCell', {index: contents.index, field: 'Cap_Password', value: contents.newPass});
+			}else{
+				submit.addClass('btn-danger').removeClass('btn-primary');
+			}
+
+		}, 'json');
+	});
+
+	$('#capTable').on('click', '#deleteCap', function(e){
+		e.preventDefault();
+		var dataId = $(this).attr('data-id');
+		//console.log(dataId);
+		var contents = {
+			action:	'capDelete',
+			nonce:	$('#capTable_nonce').val(),
+			cap_id: dataId,
+		};
+		var conf = window.confirm("هل تريد حذف هذا الكابتن؟");
+		if(conf == true){
+			$.post( admin_ajax.url, contents, function(data){
+				console.log(data);
+				if(data.result == true){
+					capTableElement.bootstrapTable('remove', {
+						field: 'Cap_ID',
+						values: dataId
+					});
+					capTableElement.bootstrapTable('refresh');
+				}
+			}, 'json');
+		}
+	});
+
+	$('#capModal').on('click', '#newCapSubmit', function(){
+		var contents = {
+			action:	'capNew',
+			nonce:	$('#capNew_nonce').val(),
+			capName: $('#capName').val(),
+			capPass: $('#capPassword').val(),
+		};
+		if(contents.capname == '' || contents.capPass == ''){
+			$('#capAlertMsg').html([
+				'<div id="capNewAlert" class="alert alert-danger alert-dismissible fade in" role="alert">',
+				'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
+				'بعض المدخلات فارغة',
+				'</div>',
+			].join(''));
+			return;
+		}
+		$.post( admin_ajax.url, contents, function(data){
+			console.log(contents,data);
+			if(data.result == false){
+				$('#capAlertMsg').html([
+					'<div id="capNewAlert" class="alert alert-danger alert-dismissible fade in" role="alert">',
+					'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
+					data.msg,
+					'</div>',
+				].join(''));
+			}else{
+				capTableElement.bootstrapTable('refresh');
+				$('#capModal').modal('hide')
+			}
+		}, 'json');
+
+
+	})
 
 	$(".date-group-stat").datepicker({
 		autoclose: true,
@@ -424,42 +516,81 @@ jQuery(document).ready(function($) {
         }, 'json');
     });
 
-	$("form#paid-form").submit(function(){
-		var submit = $("#paid-btn");
-		var message	= $("#msgBox");
-		//if(submit.hasClass('disabled')){
-		//	message.html('<div class="alert alert-danger fade in">'+
-		//			'<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
-		//			'<p class="login-msg">بعض المدخلات فارغة أو غير صحيحة</p></div>');
-		//	return;
-		//}
+	$("form#paid-form").submit(function(e){
+		e.preventDefault();
+		//console.log($(this.paid_btn));
+		var submit = $(this.paid_btn);
 
 		var contents = {
 			action: 				'adPaidSubmit',
-			nonce: 					this.adPriceSubmit_nonce.value,
+			nonce: 					this.adPaidSubmit_nonce.value,
 			ad_id: 					this.ad_id.value,
 			paidtxt: 				this.paidtext.value,
+			adprice:				this.Ad_price.value,
 		};
 
 
-		//submit.attr("disabled", "disabled").addClass('btn-warning disabled');
-		//var submit_value = submit.html();
-		//submit.html("<i class='fa fa-cog fa-spin'></i>");
+		submit.attr("disabled", "disabled").addClass('btn-warning disabled');
+		var submit_value = submit.html();
+		submit.html("<i class='fa fa-cog fa-spin'></i>");
 
 		$.post( admin_ajax.url, contents, function( data ){
-			console.log(contents);
-			submit.removeAttr("disabled").removeClass('btn-warning disabled');
-			submit.html(submit_value);
-			if( data.success == 1) {
-				message.html(data.msg);
-				if(data.action == 'insert'){
-					$('#Ad_id').val(data.id).attr('value',data.id);
-					var url = new Url;
-					url.query['id'] = data.id;
-					window.history.pushState('', '', url.toString());
-				}
-			} else {
-				message.html(data.msg);
+			//console.log(contents,data);
+			submit.html(submit_value).removeAttr('disabled').removeClass('btn-warning disabled')
+			if(data.result == true){
+				$('#paidAd'+contents.ad_id).addClass('success')
+				var remain = Number(contents.adprice) - Number(contents.paidtxt);
+				$('#remaining'+contents.ad_id).html(remain);
+			}else{
+				$('#paidAd'+contents.ad_id).addClass('danger')
+			}
+		}, 'json');
+		return false;
+	});
+
+	$("form#priceCustom").submit(function(e){
+		e.preventDefault();
+		//console.log($(this.paid_btn));
+		var submit = $(this.submit);
+
+		var contents = {
+			action: 			'adPriceCustomSubmit',
+			nonce: 				this.adPriceCustom_nonce.value,
+			picture_price:		this.picture_price.value,
+			video_price: 		this.video_price.value,
+			priority_price: 	this.priority_price.value,
+			showtocap_price: 	this.showtocap_price.value,
+			notifycap_price: 	this.notifycap_price.value,
+			mapcap_price: 		this.mapcap_price.value,
+			showtouser_price: 	this.showtouser_price.value,
+			notifyuser_price: 	this.notifyuser_price.value,
+			mapuser_price: 		this.mapuser_price.value,
+			cap100view_price: 	this.cap100view_price.value,
+			user100view_price: 	this.user100view_price.value,
+			pluslocation_price: this.pluslocation_price.value,
+		};
+
+		submit.attr("disabled", "disabled").addClass('btn-warning disabled');
+		var submit_value = submit.html();
+		submit.html("<i class='fa fa-cog fa-spin'></i>");
+
+		$.post( admin_ajax.url, contents, function( data ){
+			console.log(contents,data);
+			submit.html(submit_value).removeAttr('disabled').removeClass('btn-warning disabled')
+			if(data.result == true){
+				$('#priceAlertMsg').html([
+					'<div class="alert alert-success alert-dismissible fade in" role="alert">',
+					'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
+					'تم تعديل البيانات بنجاح',
+					'</div>',
+				].join(''));
+			}else{
+				$('#priceAlertMsg').html([
+					'<div class="alert alert-danger alert-dismissible fade in" role="alert">',
+					'<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>',
+					'حاول مرة أخرى',
+					'</div>',
+				].join(''));
 			}
 		}, 'json');
 		return false;

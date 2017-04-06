@@ -105,11 +105,9 @@ function display_mistheme_advertise() {
                         row.Ad_end_date,
                     '</span></span>',
                 ].join('');
-
             }
 
             function detailFormatter(index, row) {
-
                 var Ad_ok = '<span class="fa fa-check text-success"></span>';
                 var Ad_no = '<span class="fa fa-times text-danger"></span>';
                 var Ad_show_to_captain = row.Ad_show_to_captain == 1 ? Ad_ok:Ad_no;
@@ -184,10 +182,10 @@ function display_mistheme_advertise() {
                             '<thead>',
                                 '<tr>',
                                     '<th></th>',
-                                    '<th class="text-center"><span class="fa fa-eye fa-lg"></span></th>',
-                                    '<th class="text-center"><span class="fa fa-bell-o fa-lg"></span></th>',
-                                    '<th class="text-center"><span class="fa fa-map-marker fa-lg"></span></th>',
-                                    '<th class="text-center"><span class="fa fa-line-chart fa-lg"></span></th>',
+                                    '<th class="text-center"><span data-toggle="tooltip" data-placement="top" title="إظهار" data-trigger="hover" class="fa fa-eye fa-lg"></span></th>',
+                                    '<th class="text-center"><span data-toggle="tooltip" data-placement="top" title="تنبيه" data-trigger="hover" class="fa fa-bell-o fa-lg"></span></th>',
+                                    '<th class="text-center"><span data-toggle="tooltip" data-placement="top" title="إظهار على الخريطة" data-trigger="hover" class="fa fa-map-marker fa-lg"></span></th>',
+                                    '<th class="text-center"><span data-toggle="tooltip" data-placement="top" title="عدد مرات الظهور اليومي" data-trigger="hover" class="fa fa-line-chart fa-lg"></span></th>',
                                 '</tr>',
                             '</thead>',
                             '<tbody>',
@@ -229,13 +227,13 @@ function display_mistheme_advertise() {
                         '</a>',
                         '<div class="modal fade stat-modal" id="stat-modal-' + Number(row.Ad_id) + '" tabindex="-1" role="dialog" data-adid="'+row.Ad_id+'" data-map="statMap' + Number(row.Ad_id) + '">',
                             '<div class="modal-dialog modal-lg" role="document">',
-                                '<div class="modal-content" style="width: 100%;height: 500px">',
+                                '<div class="modal-content" style="width: 100%;height: 501px">',
                                     '<div id="adStatContent" class="row statContainer">',
-                                        '<div class="col-sm-9" style="height: 500px;">',
+                                        '<div class="col-sm-9" style="height: 499px; padding-left: 0px; border-left: solid 1px #dddddd;">',
                                             '<input type="hidden" id="statLoc'+Number(row.Ad_id)+'" value="">',
                                             '<div id="statMap' + Number(row.Ad_id) + '" class="mapContainer"></div>',
                                         '</div>',
-                                        '<div class="col-sm-3">',
+                                        '<div class="col-sm-3" style="padding-right: 5px;">',
                                             '<div id="statData'+ Number(row.Ad_id) + '" style="padding-left: 5px; padding-top: 5px;">',
                                             '</div>',
                                         '</div>',
@@ -247,13 +245,18 @@ function display_mistheme_advertise() {
                 ].join('');
 
                 var advertiserHTML = [
-                            '<div class="panel panel-default" id="advertiser-panel" style="margin-top: 15px;">',
-                                '<div class="panel-body">',
-                                    '<div class="clearfix">',
-                                        '<h5 class="pull-right margin-null">الجهة المعلنة:</h5>',
-                                        '<span class="label label-default pull-left">',Advertiser_type,'</span>',
+                            '<div class="panel panel-default" id="advertiser-panel" style="margin-top: 15px; margin-bottom: 15px;">',
+                                '<div class="panel-body" style="padding: 0px">',
+                                    '<div style="width: 80%;padding: 15px;float: right;">',
+                                        '<div class="clearfix">',
+                                            '<h5 class="pull-right margin-null">الجهة المعلنة:</h5>',
+                                            '<span class="label label-default pull-left">',Advertiser_type,'</span>',
+                                        '</div>',
+                                        '<div class="text-center">',row.Advertiser_name,'</div>',
                                     '</div>',
-                                    '<div class="text-center">',row.Advertiser_name,'</div>',
+                                    '<div class="contactDrop text-center" id="advertiser-drop">',
+                                        '<span class="glyphicon glyphicon-chevron-down"></span>',
+                                    '</div>',
                                 '</div>',
                                 '<div class="panel-footer" style="display: none;">',
                                     '<ul class="list-group">',
@@ -266,13 +269,18 @@ function display_mistheme_advertise() {
                             '</div>',
                     ].join('');
                 var advertiserRepHTML = [
-                        '<div class="panel panel-default" id="advertiser-panel">',
-                            '<div class="panel-body">',
-                                '<div class="clearfix">',
+                        '<div class="panel panel-default" id="advertiser-panel" style="margin-bottom: 15px;">',
+                            '<div class="panel-body" style="padding: 0px">',
+                                '<div style="width: 80%;padding: 15px;float: right;">',
+                                    '<div class="clearfix">',
                                     '<h5 class="pull-right margin-null">ممثل الجهة المعلنة:</h5>',
                                     '<span class="label label-default pull-left">',Advertiser_rep_type,'</span>',
+                                    '</div>',
+                                    '<div class="text-center">',row.Advertiser_rep_name,'</div>',
                                 '</div>',
-                                '<div class="text-center">',row.Advertiser_rep_name,'</div>',
+                                '<div class="contactDrop text-center" id="advertiser-drop">',
+                                    '<span class="glyphicon glyphicon-chevron-down"></span>',
+                                '</div>',
                             '</div>',
                             '<div class="panel-footer" style="display: none;">',
                                 '<ul class="list-group">',
@@ -281,6 +289,25 @@ function display_mistheme_advertise() {
                                 '</ul>',
                             '</div>',
                         '</div>',
+                ].join('');
+                var finHTML = [
+                    '<div class="panel panel-default" id="advertiser-panel" style="margin-bottom: 10px;">',
+                        '<div class="panel-body" style="padding: 0px">',
+                            '<div style="width: 80%;padding: 15px;float: right;">',
+                                '<div class="text-center">','المالية','</div>',
+                            '</div>',
+                            '<div class="contactDrop text-center" id="advertiser-drop" style="padding: 15px;">',
+                                '<span class="glyphicon glyphicon-chevron-down"></span>',
+                            '</div>',
+                        '</div>',
+                        '<div class="panel-footer" style="display: none;">',
+                            '<ul class="list-group">',
+                                '<li class="list-group-item"><span>سعر الإعلان: </span> ',row.Ad_price,'</li>',
+                                '<li class="list-group-item"><span>المدفوع: </span> ',row.Ad_paid,'</li>',
+                                '<li class="list-group-item"><span>الباقي: </span> ',Number(row.Ad_price) - Number(row.Ad_paid),'</li>',
+                            '</ul>',
+                        '</div>',
+                    '</div>',
                 ].join('');
                 detailsHTML = [
                     '<div class="">',
@@ -301,6 +328,7 @@ function display_mistheme_advertise() {
                         '<div class="col-md-4">',
                             advertiserHTML,
                             advertiserRepHTML,
+                            finHTML,
                         '</div>',
                     '</div>',
                 ].join('');
@@ -358,7 +386,7 @@ function display_mistheme_advertise() {
                 }, 'json');
             }
         </script>
-        <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8"></script>
+        <script async defer type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<?php echo GOOGLE_MAPS_API; ?>"></script>
         <script>
             var allMarkers = [];
             function myMap(element, location) {
