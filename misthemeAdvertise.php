@@ -17,7 +17,7 @@ require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-stat.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-finance.php';
 require_once MISTHEMEADS_PlUGIN_PATH . 'pages/ad-captain.php';
 
-define('GOOGLE_MAPS_API','AIzaSyCVnu-mKrNr3kmhixEBLE8WBU_Rd2Beiy8');
+define('GOOGLE_MAPS_API','AIzaSyCaFIlw34FsDp1hvx4N7rhprs4Ya7_dnVU');
 /*
  * Add custom style sheet to admin page 
 */

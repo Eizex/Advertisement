@@ -478,7 +478,7 @@ jQuery(document).ready(function($) {
 		$('.datepicker').css({'top': correctedTop + 'px','right': correctedRight + 'px','display': 'block', 'left':correctedLeft + 'px'});
 	});
 
-    $('#event').on('change',function(e){
+   /*  $('#event').on('change',function(e){
         //console.log(e, this);
         if($('#event').val() == "captain_update"){
             $('#filterEndDate').datepicker('update', $('#filterStartDate').val());
@@ -497,7 +497,7 @@ jQuery(document).ready(function($) {
             $('#filterStartDate').datepicker('update', $('#filterEndDate').val());
             $(".date-group-stat").datepicker('updateDates');
         }
-    });
+    }); */
 
     $('#userAdsFilterBtn').on('click',function(){
         var startDate = $('#userfilterStartDate').val();
