@@ -566,7 +566,7 @@ function mistheme_selectCapStat_callback() {
     $cap = $_POST['capname'];
     $startDate = date_format(date_time_set(date_create($_POST['startdate']),0,0,0),"Y-m-d H:i:s");
     $endDate = date_format(date_time_set(date_create($_POST['enddate']),23,59,59),"Y-m-d H:i:s");
-    $endDate2 = date_format(date_time_set(date_create($_POST['startdate']),23,59,59),"Y-m-d H:i:s");
+    //$endDate2 = date_format(date_time_set(date_create($_POST['startdate']),23,59,59),"Y-m-d H:i:s");
     $event = $_POST['event'];
     $html = '';
     if($event=="captain_show"){
@@ -629,7 +629,7 @@ function mistheme_selectCapStat_callback() {
         }
         $html .= '</tbody></table>';
     }elseif($event == "captain_update"){
-        $queryData = mistheme_getCapDailyUpdate($cap,$startDate,$endDate2);
+        $queryData = mistheme_getCapDailyUpdate($cap,$startDate,$endDate);
         //var_dump($queryData);
         $labels = '';
         $data = '';
@@ -844,10 +844,10 @@ function mistheme_getSingleAdStat($ad_id){
     $tableNameLogs = $wpdb->prefix.'adlogs';
     $data[0] = $wpdb->get_results("SELECT COUNT(*) userShow
                                             FROM $tableNameLogs
-                                            WHERE ad_id = '$ad_id' AND event = 'user_show'")[0];
+                                            WHERE ad_id = '$ad_id' AND event = 'user_browse'")[0];
     $data[1] = $wpdb->get_results("SELECT COUNT(*) capShow
                                             FROM $tableNameLogs
-                                            WHERE ad_id = '$ad_id' AND event = 'captain_show'")[0];
+                                            WHERE ad_id = '$ad_id' AND event = 'captain_view'")[0];
     $data[2] = $wpdb->get_results("SELECT COUNT(*) userNotify
                                             FROM $tableNameLogs
                                             WHERE ad_id = '$ad_id' AND event = 'user_notify'")[0];
